@@ -14,21 +14,17 @@ void time_layer_update_proc(TimeLayer *tl, GContext* ctx)
     if (tl->hour_text && tl->minute_text)
     {
         GSize hour_sz =
-            graphics_text_layout_get_max_used_size(ctx,
-                                                   tl->hour_text,
-                                                   tl->hour_font,
-                                                   layer_get_bounds(tl->layer),
-                                                   tl->overflow_mode,
-                                                   GTextAlignmentLeft,
-                                                   tl->layout_cache);
+            graphics_text_layout_get_content_size(tl->hour_text,
+                                                  tl->hour_font,
+                                                  layer_get_bounds(tl->layer),
+                                                  tl->overflow_mode,
+                                                  GTextAlignmentLeft);
         GSize minute_sz =
-            graphics_text_layout_get_max_used_size(ctx,
-                                                   tl->minute_text,
-                                                   tl->minute_font,
-                                                   layer_get_bounds(tl->layer),
-                                                   tl->overflow_mode,
-                                                   GTextAlignmentLeft,
-                                                   tl->layout_cache);
+            graphics_text_layout_get_content_size(tl->minute_text,
+                                                  tl->minute_font,
+                                                  layer_get_bounds(tl->layer),
+                                                  tl->overflow_mode,
+                                                  GTextAlignmentLeft);
         int width = minute_sz.w + hour_sz.w;
         int half = layer_get_bounds(tl->layer).size.w / 2;
         GRect hour_bounds = layer_get_bounds(tl->layer);

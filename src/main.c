@@ -116,7 +116,7 @@ void failed(int32_t cookie, int http_status, void* context) {
 	
 	// Remove temperature text 30 minutes after a phone/bridge app disconnection
 	if (fail_count >= 30 && phone_disconnected) {
-		text_layer_set_text(&weather_layer.temp_layer, " ");
+		text_layer_set_text(weather_layer.temp_layer, " ");
 		has_temperature = false;
 	}
 	
@@ -166,7 +166,6 @@ void reconnect(void* context) {
 
 void request_weather();
 
-//void handle_tick(AppContextRef ctx, PebbleTickEvent *t)
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
     // 'Animate' loading icon until the first successful weather request
@@ -186,21 +185,16 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	}
 	
 	// Subsequently update time and date once every minute
-	if (t->units_changed & MINUTE_UNIT) 
+	if (units_changed & MINUTE_UNIT) 
 	{
 		// Need to be static because pointers to them are stored in the text layers
 	    static char date_text[] = "XXX 00";
 	    static char hour_text[] = "00";
 	    static char minute_text[] = ":00";
-
-	    (void)ctx;  // Prevent "unused parameter" warning
 		
-		if (t->units_changed & DAY_UNIT)
+		if (units_changed & DAY_UNIT)
 	    {		
-		    string_format_time(date_text,
-	                           sizeof(date_text),
-	                           "%a %d",
-	                           t->tick_time);
+		    strftime(date_text, sizeof(date_text), "%a %d", tick_time);
 
 			// Triggered if day of month < 10
 			if (date_text[4] == '0')
@@ -209,12 +203,12 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	            memmove(&date_text[4], &date_text[5], sizeof(date_text) - 1);
 			}
 			
-	        text_layer_set_text(&date_layer, date_text);
+	        text_layer_set_text(date_layer, date_text);
 	    }
 
 	    if (clock_is_24h_style())
 	    {
-	        string_format_time(hour_text, sizeof(hour_text), "%H", t->tick_time);
+	        strftime(hour_text, sizeof(hour_text), "%H", tick_time);
 			if (hour_text[0] == '0')
 	        {
 	            // Hack to get rid of the leading zero of the hour
@@ -223,7 +217,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	    }
 	    else
 	    {
-	        string_format_time(hour_text, sizeof(hour_text), "%I", t->tick_time);
+	        strftime(hour_text, sizeof(hour_text), "%I", tick_time);
 	        if (hour_text[0] == '0')
 	        {
 	            // Hack to get rid of the leading zero of the hour
@@ -231,7 +225,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	        }
 	    }
 
-	    string_format_time(minute_text, sizeof(minute_text), ":%M", t->tick_time);
+	    strftime(minute_text, sizeof(minute_text), ":%M", tick_time);
 	    time_layer_set_text(&time_layer, hour_text, minute_text);
 		
 		// Start a counter upon an error and increase by 1 each minute
@@ -247,7 +241,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 		
 		// Request updated weather every 15 minutes
 		// Stop requesting after 3 hours without any successful connection
-		if(initial_request || !has_temperature || ((t->tick_time->tm_min % 15) == initial_minute && fail_count <= 180))
+		if(initial_request || !has_temperature || ((tick_time->tm_min % 15) == initial_minute && fail_count <= 180))
 		{
 			http_location_request();
 			initial_request = false;
@@ -269,7 +263,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 			
 			/****** The code snippet below is used for the "no vibration" version
 			// Ping the phone every 5 minutes
-			if (!(t->tick_time->tm_min % 5) && fail_count == 0)
+			if (!(tick_time->tm_min % 5) && fail_count == 0)
 			{
 				link_monitor_ping();
 			}
@@ -286,10 +280,9 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 }
 
 // Initialize the application
-void handle_init(AppContextRef ctx)
+void handle_init()
 {
-    PblTm tm;
-    PebbleTickEvent t;
+    struct tm* tick_time;
     ResHandle res_d;
     ResHandle res_h;
 
@@ -314,7 +307,7 @@ void handle_init(AppContextRef ctx)
     layer_add_child(&window.layer, &time_layer.layer);
 
     text_layer_init(&date_layer, window.layer.frame);
-    text_layer_set_text_color(&date_layer, GColorWhite);
+    text_layer_set_text_color(date_layer, GColorWhite);
     text_layer_set_background_color(&date_layer, GColorClear);
     text_layer_set_font(&date_layer, font_date);
     text_layer_set_text_alignment(&date_layer, GTextAlignmentCenter);
@@ -325,16 +318,13 @@ void handle_init(AppContextRef ctx)
 	weather_layer_init(&weather_layer, GPoint(0, 90));
 	layer_add_child(&window.layer, &weather_layer.layer);
 	
-	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
+	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, NULL);
 	
 	// Refresh time
-	get_time(&tm);
-    t.tick_time = &tm;
-    t.units_changed = SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT;
+    tick_time = localtime(time(NULL))
+	initial_minute = (tick_time->tm_min % 15);
 	
-	initial_minute = (tm.tm_min % 15);
-	
-	handle_tick(ctx, &t);
+	handle_tick(tick_time, SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT);
 }
 
 // Shut down the application
