@@ -49,23 +49,24 @@ WeatherLayer *weather_layer_create(GRect frame)
   wld->icon_layer = bitmap_layer_create(GRect(9, 13, 60, 60));
   layer_add_child(weather_layer, bitmap_layer_get_layer(wld->icon_layer));
 
+  wld->icon = NULL;
+
   return weather_layer;
 }
 
 void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  // Save the pointer to the current bitmap
-  const GBitmap *bitmap = bitmap_layer_get_bitmap(wld->icon_layer);
-
+  GBitmap *new_icon =  gbitmap_create_with_resource(WEATHER_ICONS[icon]);
   // Display the new bitmap
-  bitmap_layer_set_bitmap(wld->icon_layer, gbitmap_create_with_resource(WEATHER_ICONS[icon]));
+  bitmap_layer_set_bitmap(wld->icon_layer, new_icon);
 
-  // Destroy the ex-current bitmap if it existed
-  if (bitmap != NULL) {
+  // Destroy the ex-current icon if it existed
+  if (wld->icon != NULL) {
     // A cast is needed here to get rid of the const-ness
-    gbitmap_destroy((GBitmap*)bitmap);
+    gbitmap_destroy(wld->icon);
   }
+  wld->icon = new_icon;
 }
 
 void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool is_stale) {
@@ -97,13 +98,11 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
 
   text_layer_destroy(wld->temp_layer);
   text_layer_destroy(wld->temp_layer_background);
-
-  const GBitmap *bitmap = bitmap_layer_get_bitmap(wld->icon_layer);
   bitmap_layer_destroy(wld->icon_layer);
 
   // Destroy the previous bitmap if we have one
-  if (bitmap != NULL) {
-    gbitmap_destroy((GBitmap*)bitmap);
+  if (wld->icon != NULL) {
+    gbitmap_destroy(wld->icon);
   }
   layer_destroy(weather_layer);
 }

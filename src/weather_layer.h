@@ -2,10 +2,10 @@
 #define WEATHER_LAYER_H
 
 typedef struct {
-	BitmapLayer *icon_layer;
-	TextLayer *temp_layer;
 	TextLayer *temp_layer_background;
-	bool has_weather_icon;
+	TextLayer *temp_layer;
+	GBitmap *icon;
+	BitmapLayer *icon_layer;
 	char temp_str[5];
 } WeatherLayerData;
 
