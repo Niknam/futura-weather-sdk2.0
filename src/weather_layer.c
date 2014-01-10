@@ -35,7 +35,7 @@ WeatherLayer *weather_layer_create(GRect frame)
 
   // Add background layer
   wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68));
-  text_layer_set_background_color(wld->temp_layer_background, GColorBlack);
+  text_layer_set_background_color(wld->temp_layer_background, GColorWhite);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer_background));
 
   // Add temperature layer
@@ -106,4 +106,49 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
     gbitmap_destroy((GBitmap*)bitmap);
   }
   layer_destroy(weather_layer);
+}
+
+/*
+ * Converts an API Weather Condition into one of our icons.
+ * Refer to: http://bugs.openweathermap.org/projects/api/wiki/Weather_Condition_Codes
+ */
+uint8_t weather_icon_for_condition(int c, bool night_time) {
+  // Thunderstorm
+  if (c < 300) {
+    return WEATHER_ICON_THUNDER;
+  }
+  // Drizzle
+  else if (c < 500) {
+    return WEATHER_ICON_DRIZZLE;
+  }
+  // Rain / Freezing rain / Shower rain
+  else if (c < 600) {
+    return WEATHER_ICON_RAIN;
+  }
+  // Snow
+  else if (c < 700) {
+    return WEATHER_ICON_SNOW;
+  }
+  // Sky is clear
+  else if (c == 800) {
+    if (night_time)
+      return WEATHER_ICON_CLEAR_NIGHT;
+    else
+      return WEATHER_ICON_CLEAR_DAY;
+  }
+  // few/scattered/broken clouds
+  else if (c < 804) {
+    if (night_time)
+      return WEATHER_ICON_PARTLY_CLOUDY_NIGHT;
+    else
+      return WEATHER_ICON_PARTLY_CLOUDY_DAY;
+  }
+  // overcast clouds
+  else if (c == 804) {
+    return WEATHER_ICON_CLOUDY;
+  }
+  else {
+    // no icons...?
+    return WEATHER_ICON_NOT_AVAILABLE;
+  }
 }
