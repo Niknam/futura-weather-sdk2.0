@@ -2,13 +2,18 @@
   "uuid": "6ebe49d7-bc89-498e-b147-049f49c099ad",
   "shortName": "Futura Weather",
   "longName": "Futura Weather",
-  "companyName": "Niknam Moslehi",
+  "companyName": "Pebble Community",
   "versionCode": 6,
   "versionLabel": "2.0.1",
   "watchapp": {
     "watchface": true
   },
-  "appKeys": {},
+  "appKeys": {
+    "temperature": 0,
+    "condition": 1,
+    "error": 2,
+    "request_update": 42
+  },
   "resources": {
     "media": [
       {
