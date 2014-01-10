@@ -25,31 +25,24 @@ GFont font_time;
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
-  // Update the time - Deal with 12 / 24 format
-  int hour;
-  if (!clock_is_24h_style()) {
-    hour = tick_time->tm_hour;
-    if (hour == 0)
-      hour = 12;
-    if (hour > 12)
-      hour -= 12;
+  if (units_changed & MINUTE_UNIT) {
+    // Update the time - Deal with 12 / 24 format
+    clock_copy_time_string(time_text, sizeof(time_text));
+    text_layer_set_text(time_layer, time_text);
   }
-  else {
-    hour = tick_time->tm_hour;
+  if (units_changed & DAY_UNIT) {
+    // Update the date - Without a leading 0 on the day of the month
+    char day_text[4];
+    strftime(day_text, sizeof(day_text), "%a", tick_time);
+    snprintf(date_text, sizeof(date_text), "%s %i", day_text, tick_time->tm_mday);
+    text_layer_set_text(date_layer, date_text);
   }
-  snprintf(time_text, sizeof(time_text), "%i:%02i", hour, tick_time->tm_min);
-  text_layer_set_text(time_layer, time_text);
 
-  // Update the date - Without a leading 0 on the day of the month
-  char day_text[4];
-  strftime(day_text, sizeof(day_text), "%a", tick_time);
-  snprintf(date_text, sizeof(date_text), "%s %i", day_text, tick_time->tm_mday);
-  text_layer_set_text(date_layer, date_text);
-
-  // 'Animate' loading icon until the first successful weather request
+  // Update the bottom half of the screen: icon and temperature
   static int animation_step = 0;
   if (weather_data->updated == 0 && weather_data->error == WEATHER_E_OK)
   {
+    // 'Animate' loading icon until the first successful weather request
     if (animation_step == 0) {
       weather_layer_set_icon(weather_layer, WEATHER_ICON_LOADING1);
     }
@@ -119,6 +112,10 @@ static void init(void) {
   weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
   layer_add_child(window_get_root_layer(window), weather_layer);
 
+  // Update the screen right away
+  time_t now = time(NULL);
+  handle_tick(localtime(&now), SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT );
+  // And then every second
   tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
 }
 
