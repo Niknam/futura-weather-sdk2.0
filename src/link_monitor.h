@@ -2,8 +2,6 @@
 //Can alert the user if it's broken
 
 #include <pebble.h>
-#include "http.h"
-#include "util.h"
 
 void link_monitor_ping();
 void link_monitor_handle_failure(int error);
