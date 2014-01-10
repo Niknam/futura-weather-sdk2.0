@@ -84,6 +84,16 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool 
   if ((t >= -9 && t <= 9) || (t >= 20 && t < 100)) {
     text_layer_set_font(wld->temp_layer, large_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
+
+	// Is the temperature below zero?
+	if (wld->temp_str[0] == '-') {
+	  memmove(
+          wld->temp_str + 1 + 1,
+          wld->temp_str + 1,
+          5 - (1 + 1)
+      );
+	  memcpy(&wld->temp_str[1], " ", 1);
+	}
   }
   // Temperature between 10° -> 19°
   else if (t >= 10 && t < 20) {
@@ -136,6 +146,14 @@ uint8_t weather_icon_for_condition(int c, bool night_time) {
   else if (c < 700) {
     return WEATHER_ICON_SNOW;
   }
+  // Fog / Mist / Haze / etc.
+  else if (c < 771) {
+    return WEATHER_ICON_FOG;
+  }
+  // Tornado / Squalls
+  else if (c < 800) {
+    return WEATHER_ICON_WIND;
+  }
   // Sky is clear
   else if (c == 800) {
     if (night_time)
@@ -154,8 +172,20 @@ uint8_t weather_icon_for_condition(int c, bool night_time) {
   else if (c == 804) {
     return WEATHER_ICON_CLOUDY;
   }
+  // Extreme
+  else if ((c >= 900 && c < 903) || (c > 904 && c < 1000)) {
+    return WEATHER_ICON_WIND;
+  }
+  // Cold
+  else if (c == 903) {
+      return WEATHER_ICON_COLD;
+  }
+  // Hot
+  else if (c == 904) {
+      return WEATHER_ICON_HOT;
+  }
   else {
-    // no icons...?
+    // Weather condition not available
     return WEATHER_ICON_NOT_AVAILABLE;
   }
 }
