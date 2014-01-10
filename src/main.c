@@ -37,7 +37,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   else {
     hour = tick_time->tm_hour;
   }
-  snprintf(time_text, sizeof(time_text), "%i:%i", hour, tick_time->tm_min);
+  snprintf(time_text, sizeof(time_text), "%i:%02i", hour, tick_time->tm_min);
   text_layer_set_text(time_layer, time_text);
 
   // Update the date - Without a leading 0 on the day of the month
