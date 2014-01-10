@@ -27,11 +27,17 @@ static uint8_t WEATHER_ICONS[] = {
   RESOURCE_ID_ICON_LOADING3,
 };
 
+// Keep pointers to the two fonts we use.
+static GFont large_font, small_font;
+
 WeatherLayer *weather_layer_create(GRect frame)
 {
   // Create a new layer with some extra space to save our custom Layer infos
   WeatherLayer *weather_layer = layer_create_with_data(frame, sizeof(WeatherLayerData));
   WeatherLayerData *wld = layer_get_data(weather_layer);
+
+  large_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40));
+  small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35));
 
   // Add background layer
   wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68));
@@ -42,7 +48,7 @@ WeatherLayer *weather_layer_create(GRect frame)
   wld->temp_layer = text_layer_create(GRect(70, 19, 72, 80));
   text_layer_set_background_color(wld->temp_layer, GColorClear);
   text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
-  text_layer_set_font(wld->temp_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40)));
+  text_layer_set_font(wld->temp_layer, large_font);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer));
 
   // Add bitmap layer
@@ -78,17 +84,17 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool 
 
   // Temperature between -9° -> 9° or 20° -> 99°
   if ((t >= -9 && t <= 9) || t >= 20) {
-    text_layer_set_font(wld->temp_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40)));
+    text_layer_set_font(wld->temp_layer, large_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   }
   // Temperature between 10° -> 19°
   else if (t >= 10) {
-    text_layer_set_font(wld->temp_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40)));
+    text_layer_set_font(wld->temp_layer, large_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
   }
   // Temperature above 99° or below -9°
   else {
-    text_layer_set_font(wld->temp_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35)));
+    text_layer_set_font(wld->temp_layer, small_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   }
 }
@@ -105,6 +111,9 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
     gbitmap_destroy(wld->icon);
   }
   layer_destroy(weather_layer);
+
+  fonts_unload_custom_font(large_font);
+  fonts_unload_custom_font(small_font);
 }
 
 /*
