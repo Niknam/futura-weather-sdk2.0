@@ -13,7 +13,7 @@ To do:
 	- Phone link monitor control
 
 Based on work by:
- - Weather example by Katharine - https://github.com/Katharine/WeatherWatch
+ - "WeatherWatch" by Katharine - https://github.com/Katharine/WeatherWatch
  - "Roboto Weather" by Martin Rosinski - http://www.mypebblefaces.com/apps/3601/3408/
 
 #### Help a student out ♥
