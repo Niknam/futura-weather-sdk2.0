@@ -26,8 +26,21 @@ GFont font_time;
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
   if (units_changed & MINUTE_UNIT) {
-    // Update the time - Deal with 12 / 24 format
-    clock_copy_time_string(time_text, sizeof(time_text));
+    // Update the time - Fix to deal with 12 / 24 centering bug
+    time_t currentTime = time(0);
+    struct tm *currentLocalTime = localtime(&currentTime);
+
+    // Manually format the time as 12 / 24 hour, as specified
+    strftime(   time_text, 
+                sizeof(time_text), 
+                clock_is_24h_style() ? "%R" : "%I:%M", 
+                currentLocalTime);
+
+    // Drop the first char of time_text if needed
+    if (!clock_is_24h_style() && (time_text[0] == '0')) {
+      memmove(time_text, &time_text[1], sizeof(time_text) - 1);
+    }
+
     text_layer_set_text(time_layer, time_text);
   }
   if (units_changed & DAY_UNIT) {
