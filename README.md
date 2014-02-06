@@ -17,4 +17,4 @@ Based on work by:
  - "Roboto Weather" by Martin Rosinski - http://www.mypebblefaces.com/apps/3601/3408/
 
 #### Help a student out ♥
-![Donate](https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif)(https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SELDPV4T45FK6)
+[![Donate](https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SELDPV4T45FK6)
