@@ -36,23 +36,37 @@ function locationError(err) {
 function fetchWeather(latitude, longitude) {
   var response;
   var req = new XMLHttpRequest();
-  req.open('GET', "http://api.openweathermap.org/data/2.1/find/city?" +
-    "lat=" + latitude + "&lon=" + longitude + "&cnt=1", true);
+  	req.open('GET', "http://api.openweathermap.org/data/2.5/weather?" +
+	    "lat=" + latitude + "&lon=" + longitude + "&cnt=1", true);
   req.onload = function(e) {
     if (req.readyState == 4) {
       if(req.status == 200) {
         console.log(req.responseText);
         response = JSON.parse(req.responseText);
-        var temperature, icon, city;
-        if (response && response.list && response.list.length > 0) {
-          var weatherResult = response.list[0];
-          temperature = Math.round(weatherResult.main.temp - 273.15);
-          condition = weatherResult.weather[0].id;
+        var temperature, icon, city, sunrise, sunset;
+        var current_time = Date.now() / 1000;
+        if (response) {
+		  var tempResult = response.main.temp;
+          if (response.sys.country === "US") {
+		  	// Convert temperature to Fahrenheit if user is within the US
+	        temperature = Math.round(((tempResult - 273.15) * 1.8) + 32);
+		  }
+		  else {
+		  	// Otherwise, convert temperature to Celsius
+			temperature = Math.round(tempResult - 273.15);
+		  }		 
+		  condition = response.weather[0].id;
+		  sunrise = response.sys.sunrise;
+		  sunset = response.sys.sunset;
 
-          console.log("Temperature: " + temperature + " Condition: " + condition);
+          console.log("Temperature: " + temperature + " Condition: " + condition + " Sunrise: " + sunrise +
+                      " Sunset: " + sunset + " Now: " + Date.now() / 1000);
           Pebble.sendAppMessage({
             "condition": condition,
-            "temperature": temperature
+            "temperature": temperature,
+			"sunrise": sunrise,
+			"sunset": sunset,
+            "current_time": current_time
           });
           updateInProgress = false;
         }
@@ -65,6 +79,3 @@ function fetchWeather(latitude, longitude) {
   }
   req.send(null);
 }
-
-
-

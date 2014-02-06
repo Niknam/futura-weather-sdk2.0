@@ -80,10 +80,9 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
       }
       weather_layer_set_temperature(weather_layer, weather_data->temperature, stale);
 
-      // Figure out if it's day or night. Not the best way to do this but the webservice
-      // does not seem to return this info.
+      // Day/night check
       bool night_time = false;
-      if (tick_time->tm_hour >= 19 || tick_time->tm_hour < 7)
+      if (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset)
         night_time = true;
       weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, night_time));
     }
