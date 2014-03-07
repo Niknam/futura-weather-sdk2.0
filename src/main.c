@@ -19,6 +19,8 @@ static WeatherLayer *weather_layer;
 static char date_text[] = "XXX 00";
 static char time_text[] = "00:00";
 
+bool timer_tick_each_second = true;
+
 /* Preload the fonts */
 GFont font_date;
 GFont font_time;
@@ -68,6 +70,11 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
     animation_step = (animation_step + 1) % 3;
   }
   else {
+    if (timer_tick_each_second) {
+      timer_tick_each_second = false;
+      tick_timer_service_unsubscribe();
+      tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+    }
     // Update the weather icon and temperature
     if (weather_data->error) {
       weather_layer_set_icon(weather_layer, WEATHER_ICON_PHONE_ERROR);
