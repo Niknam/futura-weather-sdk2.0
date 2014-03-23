@@ -72,8 +72,8 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   else {
     if (timer_tick_each_second) {
       timer_tick_each_second = false;
-      tick_timer_service_unsubscribe();
-      tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+      //tick_timer_service_unsubscribe();
+      //tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
     }
     // Update the weather icon and temperature
     if (weather_data->error) {
