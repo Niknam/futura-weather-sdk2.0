@@ -6,7 +6,7 @@ typedef struct {
 	TextLayer *temp_layer;
 	GBitmap *icon;
 	BitmapLayer *icon_layer;
-	char temp_str[6];
+	char temp_str[16];
 } WeatherLayerData;
 
 typedef enum {
@@ -37,11 +37,12 @@ typedef enum {
 } WeatherIcon;
 
 typedef Layer WeatherLayer;
+#include "network.h"  // for WeatherData
 
 WeatherLayer *weather_layer_create(GRect frame);
 void weather_layer_destroy(WeatherLayer* weather_layer);
 void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon);
-void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t temperature, bool is_stale);
+void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, bool is_stale);
 uint8_t weather_icon_for_condition(int condition, bool night_time);
 
 #endif

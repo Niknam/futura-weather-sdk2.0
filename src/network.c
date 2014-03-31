@@ -7,6 +7,8 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
   WeatherData *weather = (WeatherData*) context;
 
   Tuple *temperature_tuple = dict_find(received, KEY_TEMPERATURE);
+  Tuple *intemp_tuple = dict_find(received, KEY_INTEMP);
+  Tuple *outtemp_tuple = dict_find(received, KEY_OUTTEMP);
   Tuple *condition_tuple = dict_find(received, KEY_CONDITION);
   Tuple *sunrise_tuple = dict_find(received, KEY_SUNRISE);
   Tuple *sunset_tuple = dict_find(received, KEY_SUNSET);
@@ -15,6 +17,8 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
 
   if (temperature_tuple && condition_tuple) {
     weather->temperature = temperature_tuple->value->int32;
+    weather->intemp = intemp_tuple->value->int32;
+    weather->outtemp = outtemp_tuple->value->int32;
     weather->condition = condition_tuple->value->int32;
     weather->sunrise = sunrise_tuple->value->int32;
     weather->sunset = sunset_tuple->value->int32;

@@ -37,7 +37,9 @@ WeatherLayer *weather_layer_create(GRect frame)
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
   large_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40));
-  small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35));
+  //small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35));
+  small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
+
 
   // Add background layer
   wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68));
@@ -45,10 +47,10 @@ WeatherLayer *weather_layer_create(GRect frame)
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer_background));
 
   // Add temperature layer
-  wld->temp_layer = text_layer_create(GRect(70, 19, 72, 80));
+  wld->temp_layer = text_layer_create(GRect(70, 6, 72, 80));
   text_layer_set_background_color(wld->temp_layer, GColorClear);
   text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
-  text_layer_set_font(wld->temp_layer, large_font);
+  text_layer_set_font(wld->temp_layer, small_font);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer));
 
   // Add bitmap layer
@@ -75,14 +77,22 @@ void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
   wld->icon = new_icon;
 }
 
-void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool is_stale) {
+void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, bool is_stale) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
+  int16_t t = w->temperature;
+  int16_t in = w->intemp;
+  int16_t out = w->outtemp;
 
+  //snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
+  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i", in, out, t);
+
+    text_layer_set_font(wld->temp_layer, small_font);
+    text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
+/*
   // Temperature between -9° -> 9° or 20° -> 99°
   if ((t >= -9 && t <= 9) || (t >= 20 && t < 100)) {
-    text_layer_set_font(wld->temp_layer, large_font);
+    text_layer_set_font(wld->temp_layer, small_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
 
 	// Is the temperature below zero?
@@ -97,7 +107,7 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool 
   }
   // Temperature between 10° -> 19°
   else if (t >= 10 && t < 20) {
-    text_layer_set_font(wld->temp_layer, large_font);
+    text_layer_set_font(wld->temp_layer, small_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
   }
   // Temperature above 99° or below -9°
@@ -105,6 +115,8 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool 
     text_layer_set_font(wld->temp_layer, small_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   }
+*/
+
   text_layer_set_text(wld->temp_layer, wld->temp_str);
 }
 

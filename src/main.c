@@ -78,7 +78,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
       if (weather_data->updated > time(NULL) + 1800) {
         stale = true;
       }
-      weather_layer_set_temperature(weather_layer, weather_data->temperature, stale);
+      weather_layer_set_temperature(weather_layer, weather_data, stale);
 
       // Day/night check
       bool night_time = false;
