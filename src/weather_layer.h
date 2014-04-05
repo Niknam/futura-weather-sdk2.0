@@ -37,7 +37,7 @@ typedef enum {
 } WeatherIcon;
 
 typedef Layer WeatherLayer;
-#include "network.h"  // for WeatherData
+#include "weather_data.h"
 
 WeatherLayer *weather_layer_create(GRect frame);
 void weather_layer_destroy(WeatherLayer* weather_layer);

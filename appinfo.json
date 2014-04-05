@@ -1,7 +1,7 @@
 {
   "uuid": "6ebe49d7-bc89-498e-b147-049f49c099ad",
-  "shortName": "Futura Weather",
-  "longName": "Futura Weather",
+  "shortName": "Gary Weather",
+  "longName": "Gary Weather",
   "companyName": "Pebble Community",
   "versionCode": 8,
   "versionLabel": "2.0.3",
@@ -17,6 +17,7 @@
     "error": 5,
     "intemp": 6,
     "outtemp": 7,
+    "place": 8,
     "request_update": 42
   },
   "resources": {

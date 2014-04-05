@@ -9,6 +9,7 @@ Pebble.addEventListener("appmessage", function(e) {
 });
 
 var updateInProgress = false;
+var counter = 0;
 
 function updateWeather() {
     if (!updateInProgress) {
