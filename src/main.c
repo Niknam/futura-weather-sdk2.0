@@ -89,7 +89,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   }
 
   // Refresh the weather info every 15 minutes
-  if (units_changed & MINUTE_UNIT && (tick_time->tm_min % 15) == 0)
+  if ((units_changed & MINUTE_UNIT) && ((tick_time->tm_min % 15) == 0))
   {
     request_weather();
   }

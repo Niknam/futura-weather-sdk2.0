@@ -43,18 +43,20 @@ WeatherLayer *weather_layer_create(GRect frame)
 
   // Add background layer
   wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68));
-  text_layer_set_background_color(wld->temp_layer_background, GColorWhite);
+  text_layer_set_background_color(wld->temp_layer_background, GColorBlack);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer_background));
 
   // Add temperature layer
-  wld->temp_layer = text_layer_create(GRect(70, 6, 72, 80));
+  //wld->temp_layer = text_layer_create(GRect(70, 6, 72, 80));
+  wld->temp_layer = text_layer_create(GRect(40, 6, 102, 80));
   text_layer_set_background_color(wld->temp_layer, GColorClear);
   text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   text_layer_set_font(wld->temp_layer, small_font);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer));
 
   // Add bitmap layer
-  wld->icon_layer = bitmap_layer_create(GRect(9, 13, 60, 60));
+  //wld->icon_layer = bitmap_layer_create(GRect(9, 13, 60, 60));
+  wld->icon_layer = bitmap_layer_create(GRect(9, 13, 30, 30));
   layer_add_child(weather_layer, bitmap_layer_get_layer(wld->icon_layer));
 
   wld->icon = NULL;
@@ -97,8 +99,9 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
   //snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
   snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i %s", in, out, t, percent, place);
 
-    text_layer_set_font(wld->temp_layer, small_font);
-    text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
+	text_layer_set_text_color(wld->temp_layer, GColorWhite);
+	text_layer_set_font(wld->temp_layer, small_font);
+	text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
 /*
   // Temperature between -9° -> 9° or 20° -> 99°
   if ((t >= -9 && t <= 9) || (t >= 20 && t < 100)) {
