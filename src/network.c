@@ -9,7 +9,7 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
   Tuple *temperature_tuple = dict_find(received, KEY_TEMPERATURE);
   Tuple *intemp_tuple = dict_find(received, KEY_INTEMP);
   Tuple *outtemp_tuple = dict_find(received, KEY_OUTTEMP);
-  //Tuple *place_tuple = dict_find(received, KEY_PLACE);
+  Tuple *place_tuple = dict_find(received, KEY_PLACE);
   
   Tuple *condition_tuple = dict_find(received, KEY_CONDITION);
   Tuple *sunrise_tuple = dict_find(received, KEY_SUNRISE);
@@ -21,11 +21,11 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
     weather->temperature = temperature_tuple->value->int32;
     weather->intemp = intemp_tuple->value->int32;
     weather->outtemp = outtemp_tuple->value->int32;
-	//weather->place = place_tuple->value->cstring;
     weather->condition = condition_tuple->value->int32;
     weather->sunrise = sunrise_tuple->value->int32;
     weather->sunset = sunset_tuple->value->int32;
     weather->current_time = current_time_tuple->value->int32;
+	strncpy(&weather->place[0], place_tuple->value->cstring, sizeof(weather->place)/sizeof(weather->place[0])-1);
     weather->error = WEATHER_E_OK;
     weather->updated = time(NULL);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got temperature %i and condition %i", weather->temperature, weather->condition);

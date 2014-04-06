@@ -83,9 +83,13 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
   int16_t t = w->temperature;
   int16_t in = w->intemp;
   int16_t out = w->outtemp;
-
+  const int max_len = 12;
+  char place[max_len];
+  
+  strncpy(&place[0], &w->place[0], max_len);
+  
   //snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i", in, out, t);
+  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %s", in, out, t, place);
 
     text_layer_set_font(wld->temp_layer, small_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);

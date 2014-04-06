@@ -9,7 +9,6 @@ Pebble.addEventListener("appmessage", function(e) {
 });
 
 var updateInProgress = false;
-var counter = 0;
 
 function updateWeather() {
     if (!updateInProgress) {
@@ -65,19 +64,21 @@ function fetchWeather(latitude, longitude) {
                     intemp = Math.round(response.gary.intemp);
                     outtemp = Math.round(response.gary.temp);
 
+                    var place = response.name;
 
 		    
-                    console.log("gin:" + intemp + "Temperature: " + temperature + " Condition: " + condition + " Sunrise: " + sunrise +
+                    console.log("place:" + place + " in:" + intemp + " Temperature: " + temperature + " Condition: " + condition + " Sunrise: " + sunrise +
                               " Sunset: " + sunset + " Now: " + Date.now() / 1000);
                               
                     Pebble.sendAppMessage({
                         "condition": condition,
                         "temperature": temperature,
-			"intemp": intemp,
-			"outtemp": outtemp,
+						"intemp": intemp,
+						"outtemp": outtemp,
                         "sunrise": sunrise,
                         "sunset": sunset,
-                        "current_time": current_time
+                        "current_time": current_time,
+						"place": place
                     });
                     updateInProgress = false;
                 }
