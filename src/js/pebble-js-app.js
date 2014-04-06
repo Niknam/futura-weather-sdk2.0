@@ -64,7 +64,7 @@ function fetchWeather(latitude, longitude) {
                     intemp = Math.round(response.gary.intemp);
                     outtemp = Math.round(response.gary.temp);
 
-                    var place = response.name;
+                    var place = response.gary.place;
 
 		    
                     console.log("place:" + place + " in:" + intemp + " Temperature: " + temperature + " Condition: " + condition + " Sunrise: " + sunrise +

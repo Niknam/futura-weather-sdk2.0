@@ -88,8 +88,14 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
   
   strncpy(&place[0], &w->place[0], max_len);
   
+  BatteryChargeState bat = battery_state_service_peek();
+  
+  uint8_t percent = bat.charge_percent;
+  bool is_charging = bat.is_charging;
+
+  
   //snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %s", in, out, t, place);
+  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i %s", in, out, t, percent, place);
 
     text_layer_set_font(wld->temp_layer, small_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
