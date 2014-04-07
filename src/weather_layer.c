@@ -95,9 +95,16 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
   uint8_t percent = bat.charge_percent;
   bool is_charging = bat.is_charging;
 
+    struct tm *currentLocalTime = localtime(&w->updated);
+
+	char time_text[10];
+    strftime(   time_text, 
+                sizeof(time_text), 
+                "%I%M", 
+                currentLocalTime);
   
   //snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i \n%s", in, out, t, percent, place);
+  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i %s %s", in, out, t, percent, time_text, place);
 
       APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
 
