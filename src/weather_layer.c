@@ -97,14 +97,20 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 
     struct tm *currentLocalTime = localtime(&w->updated);
 
+	int time_index = 0;
 	char time_text[10];
     strftime(   time_text, 
                 sizeof(time_text), 
-                "%I%M", 
+                clock_is_24h_style() ? "%R" : "%I:%M", 
                 currentLocalTime);
   
-  //snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i %s %s", in, out, t, percent, time_text, place);
+    // Drop the first char of time_text if needed
+    if (!clock_is_24h_style() && (time_text[0] == '0')) {
+      time_index++;
+    }
+
+	//snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
+	snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i %s %s", in, out, t, percent, &time_text[time_index], place);
 
       APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
 
