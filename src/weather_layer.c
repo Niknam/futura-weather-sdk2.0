@@ -112,7 +112,7 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	//snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
 	snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i %s %s", in, out, t, percent, &time_text[time_index], place);
 
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
+      //APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
 
   
 	text_layer_set_text_color(wld->temp_layer, GColorWhite);

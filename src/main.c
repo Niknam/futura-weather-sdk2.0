@@ -104,6 +104,61 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   }
 }
 
+static void handle_accelerator(AccelData *samples, uint32_t num_samples)
+{
+	if(num_samples < 2)
+	{
+		return;
+	}
+	
+	int32_t sum_z = samples[0].z;
+	int32_t sum_delta_z = 0;
+	int32_t max_z = sum_z;
+	int32_t max_delta = 0;
+	for(uint32_t i = 1; i < num_samples; i++)
+	{
+		// ignore if vibrating
+		if(samples[i].did_vibrate)
+		{
+			return;
+		}
+		
+		//uint64_t time = samples[i].timestamp;
+		
+		int32_t delta = samples[i].z - samples[i-1].z;
+		
+		if(delta < max_delta)
+		{
+			max_delta = delta;
+		}
+		if(samples[i].z < max_z)
+		{
+			max_z = samples[i].z;
+		}
+		
+		sum_delta_z += delta;
+		sum_z += samples[i].z;
+	}
+	
+	sum_z /= (int)num_samples;
+	sum_delta_z /= (int)(num_samples-1);
+	
+	if(sum_z < -1000)
+	{
+		// update if we haven't updated for at least a minute
+		if (weather_data->updated < time(NULL) - 60) 
+		{
+			light_enable_interaction();
+		
+			request_weather();
+
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "movement, and need to update weather\n");
+		}
+		
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "%i %i %i %i %i\n", (int)sum_z, (int)sum_delta_z, (int)max_z, (int)max_delta, (int)num_samples);
+	}
+}
+
 static void init(void) {
   window = window_create();
   window_stack_push(window, true /* Animated */);
@@ -139,6 +194,10 @@ static void init(void) {
   handle_tick(localtime(&now), SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT );
   // And then every second
   tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+  
+  uint32_t samples_per_update = 100;
+  accel_data_service_subscribe(samples_per_update, handle_accelerator); 
+	
 }
 
 static void deinit(void) {
