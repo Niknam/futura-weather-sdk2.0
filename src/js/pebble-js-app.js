@@ -9,10 +9,20 @@ Pebble.addEventListener("appmessage", function(e) {
 });
 
 var updateInProgress = false;
+var updateInProgressStartTime = 0;
 
 function updateWeather() {
+    if (updateInProgress) {
+		if(updateInProgressStartTime < (Date.now() / 1000) - 60*10)
+		{
+			console.log("Update appears to be in progress, but resetting as it was over 10 mins ago");
+			updateInProgress = false;
+		}
+	}
+	
     if (!updateInProgress) {
         updateInProgress = true;
+		updateInProgressStartTime = Date.now() / 1000;
         var locationOptions = { "timeout": 15000, "maximumAge": 60000 };
         navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
     }
