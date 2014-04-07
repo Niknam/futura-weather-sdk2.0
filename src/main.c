@@ -145,8 +145,8 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 	
 	if(sum_z < -1000)
 	{
-		// update if we haven't updated for at least a minute
-		if (weather_data->updated < time(NULL) - 60) 
+		// update if we haven't updated for at least 3 minutes
+		if (weather_data->updated < time(NULL) - 60*3) 
 		{
 			light_enable_interaction();
 		
