@@ -68,6 +68,15 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
     animation_step = (animation_step + 1) % 3;
   }
   else {
+  
+	static int first_update = 1;
+	if(first_update)
+	{
+		// turn the light on, it will turn off automatically
+		light_enable_interaction();	
+		first_update = 0;
+	}
+  
     // Update the weather icon and temperature
     if (weather_data->error) {
       weather_layer_set_icon(weather_layer, WEATHER_ICON_PHONE_ERROR);
