@@ -28,7 +28,7 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
 	strncpy(&weather->place[0], place_tuple->value->cstring, sizeof(weather->place)/sizeof(weather->place[0])-1);
     weather->error = WEATHER_E_OK;
     weather->updated = time(NULL);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Got temperature %i and condition %i", weather->temperature, weather->condition);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Got temperature %i and condition %i place %s", weather->temperature, weather->condition, &weather->place[0]);
   }
   else if (error_tuple) {
     weather->error = WEATHER_E_NETWORK;

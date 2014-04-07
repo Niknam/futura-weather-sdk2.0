@@ -121,7 +121,8 @@ static void init(void) {
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(date_layer));
 
   // Add weather layer
-  weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
+  //weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
+  weather_layer = weather_layer_create(GRect(0, 90, 144, 78)); // screen res is 144x168
   layer_add_child(window_get_root_layer(window), weather_layer);
 
   // Update the screen right away
