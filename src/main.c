@@ -84,7 +84,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
     else {
       // Show the temperature as 'stale' if it has not been updated in 30 minutes
       bool stale = false;
-      if (weather_data->updated > time(NULL) + 1800) {
+      if (weather_data->updated < time(NULL) - 30*60) {
         stale = true;
       }
       weather_layer_set_temperature(weather_layer, weather_data, stale);
