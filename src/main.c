@@ -143,7 +143,7 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 	sum_z /= (int)num_samples;
 	sum_delta_z /= (int)(num_samples-1);
 	
-	if(sum_z < -1000)
+	if(max_z < -2000)
 	{
 		// update if we haven't updated for at least 3 minutes
 		if (weather_data->updated < time(NULL) - 60*3) 
