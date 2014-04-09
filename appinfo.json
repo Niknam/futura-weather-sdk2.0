@@ -1,10 +1,10 @@
 {
-  "uuid": "6ebe49d7-bc89-498e-b147-049f49c099ad",
+  "uuid": "511e6415-6ae0-4455-8f85-f5f5ca813b03",
   "shortName": "Gary Weather",
   "longName": "Gary Weather",
   "companyName": "Pebble Community",
   "versionCode": 8,
-  "versionLabel": "2.0.3",
+  "versionLabel": "3.0.1",
   "watchapp": {
     "watchface": true
   },
