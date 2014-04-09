@@ -113,7 +113,7 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
       time_index++;
     }
 	
-	char* stale_text = (is_stale)? "" : "stale";
+	char* stale_text = (is_stale)? "old" : "";
 
 	// excluding the update time time_text, has anything changed in the output
 	int changed = 0;
