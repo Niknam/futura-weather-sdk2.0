@@ -4,9 +4,6 @@
 #include "network.h"
 #include "config.h"
 
-#define TIME_FRAME      (GRect(0, 2, 144, 168-6))
-#define DATE_FRAME      (GRect(1, 66, 144, 168-62))
-
 /* Keep a pointer to the current weather data as a global variable */
 static WeatherData *weather_data;
 
@@ -159,6 +156,11 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 	}
 }
 
+//#define TIME_FRAME      (GRect(0, 2, 144, 168-6))
+//#define DATE_FRAME      (GRect(1, 66, 144, 168-62))
+#define TIME_FRAME      (GRect(0, 2, 144, 168-6))
+#define DATE_FRAME      (GRect(44, 66, 144-44, 168-62))
+
 static void init(void) {
   window = window_create();
   window_stack_push(window, true /* Animated */);
@@ -186,7 +188,7 @@ static void init(void) {
 
   // Add weather layer
   //weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
-  weather_layer = weather_layer_create(GRect(0, 90, 144, 78)); // screen res is 144x168
+  weather_layer = weather_layer_create(GRect(0, 60, 144, 108)); // screen res is 144x168
   layer_add_child(window_get_root_layer(window), weather_layer);
 
   // Update the screen right away

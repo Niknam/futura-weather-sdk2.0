@@ -30,7 +30,7 @@ static uint8_t WEATHER_ICONS[] = {
 // Keep pointers to the two fonts we use.
 static GFont large_font, small_font;
 
-WeatherLayer *weather_layer_create(GRect frame)	// 0, 90, 144, 78
+WeatherLayer *weather_layer_create(GRect frame)	// 0, 60, 144, 108
 {
   // Create a new layer with some extra space to save our custom Layer infos
   WeatherLayer *weather_layer = layer_create_with_data(frame, sizeof(WeatherLayerData));
@@ -46,13 +46,13 @@ WeatherLayer *weather_layer_create(GRect frame)	// 0, 90, 144, 78
 
 
   // Add background layer - used purely to provide a solid background color - note this leaves a 10 line gap from the frame rect and this rect
-  wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68));
+  wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68)); // 0, 10, 144, 68
   text_layer_set_background_color(wld->temp_layer_background, GColorBlack);
-  layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer_background));
+  //layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer_background));
 
   // Add temperature layer
   //wld->temp_layer = text_layer_create(GRect(70, 6, 72, 80));
-  wld->temp_layer = text_layer_create(GRect(40, 6, 102, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
+  wld->temp_layer = text_layer_create(GRect(0, 36, 142, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
   text_layer_set_background_color(wld->temp_layer, GColorClear);
   text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   text_layer_set_font(wld->temp_layer, small_font);
@@ -60,7 +60,7 @@ WeatherLayer *weather_layer_create(GRect frame)	// 0, 90, 144, 78
 
   // Add bitmap layer
   //wld->icon_layer = bitmap_layer_create(GRect(9, 13, 60, 60));
-  wld->icon_layer = bitmap_layer_create(GRect(9, 13, 30, 30));
+  wld->icon_layer = bitmap_layer_create(GRect(9, 3, 30, 30));
   layer_add_child(weather_layer, bitmap_layer_get_layer(wld->icon_layer));
 
   wld->icon = NULL;
