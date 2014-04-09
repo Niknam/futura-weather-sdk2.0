@@ -6,7 +6,8 @@ typedef struct {
 	TextLayer *temp_layer;
 	GBitmap *icon;
 	BitmapLayer *icon_layer;
-	char temp_str[32];
+	char output_str[32];
+	char prev_output_str[32];
 } WeatherLayerData;
 
 typedef enum {

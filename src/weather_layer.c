@@ -30,25 +30,29 @@ static uint8_t WEATHER_ICONS[] = {
 // Keep pointers to the two fonts we use.
 static GFont large_font, small_font;
 
-WeatherLayer *weather_layer_create(GRect frame)
+WeatherLayer *weather_layer_create(GRect frame)	// 0, 90, 144, 78
 {
   // Create a new layer with some extra space to save our custom Layer infos
   WeatherLayer *weather_layer = layer_create_with_data(frame, sizeof(WeatherLayerData));
   WeatherLayerData *wld = layer_get_data(weather_layer);
+  
+  // initialise
+  wld->prev_output_str[0] = 0;
+  wld->output_str[0] = 0;
 
   large_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40));
   //small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35));
   small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
 
 
-  // Add background layer
+  // Add background layer - used purely to provide a solid background color - note this leaves a 10 line gap from the frame rect and this rect
   wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68));
   text_layer_set_background_color(wld->temp_layer_background, GColorBlack);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer_background));
 
   // Add temperature layer
   //wld->temp_layer = text_layer_create(GRect(70, 6, 72, 80));
-  wld->temp_layer = text_layer_create(GRect(40, 6, 102, 80));
+  wld->temp_layer = text_layer_create(GRect(40, 6, 102, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
   text_layer_set_background_color(wld->temp_layer, GColorClear);
   text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   text_layer_set_font(wld->temp_layer, small_font);
@@ -108,9 +112,19 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
     if (!clock_is_24h_style() && (time_text[0] == '0')) {
       time_index++;
     }
+	
+	char* stale_text = (is_stale)? "" : "stale";
 
-	//snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
-	snprintf(wld->temp_str, sizeof(wld->temp_str), "%i %i %i %i %s %s", in, out, t, percent, &time_text[time_index], place);
+	// excluding the update time time_text, has anything changed in the output
+	int changed = 0;
+	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i %i %s %s", in, out, t, percent, place, stale_text);
+	if(strcmp(wld->output_str, wld->prev_output_str))
+	{
+		changed = 1;
+		strcpy(wld->prev_output_str, wld->output_str);
+	}
+	
+	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i %i %s %s %s", in, out, t, percent, &time_text[time_index], place, stale_text);
 
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
 
@@ -146,7 +160,19 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
   }
 */
 
-  text_layer_set_text(wld->temp_layer, wld->temp_str);
+  text_layer_set_text(wld->temp_layer, wld->output_str);
+  
+  // has the output changed
+  if(changed)
+  {
+	// Vibe pattern: ms on/off/on:
+	static const uint32_t const segments[] = { 50, 100, 40 };
+	VibePattern pat = {
+		.durations = segments,
+		.num_segments = ARRAY_LENGTH(segments),
+	};
+	vibes_enqueue_custom_pattern(pat);  
+  }
 }
 
 void weather_layer_destroy(WeatherLayer* weather_layer) {
