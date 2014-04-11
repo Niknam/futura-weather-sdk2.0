@@ -37,9 +37,8 @@ WeatherLayer *weather_layer_create(GRect frame)	// 0, 60, 144, 108
   WeatherLayerData *wld = layer_get_data(weather_layer);
   
   // initialise
-  wld->prev_output_str[0] = 0;
-  wld->output_str[0] = 0;
-
+  memset(wld, 0, sizeof(wld));
+  
   large_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40));
   //small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35));
   small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
@@ -83,16 +82,13 @@ void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
   wld->icon = new_icon;
 }
 
-void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, bool is_stale) {
+void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, bool is_stale) 
+{
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
   int16_t t = w->temperature;
   int16_t in = w->intemp;
   int16_t out = w->outtemp;
-  const int max_len = 12;
-  char place[max_len];
-  
-  strncpy(&place[0], &w->place[0], max_len);
   
   BatteryChargeState bat = battery_state_service_peek();
   
@@ -117,14 +113,15 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 
 	// excluding the update time time_text, has anything changed in the output
 	int changed = 0;
-	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i %i %s %s", in, out, t, percent, place, stale_text);
+	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i %i %s %s", in, out, t, percent, w->place, stale_text);
 	if(strcmp(wld->output_str, wld->prev_output_str))
 	{
 		changed = 1;
 		strcpy(wld->prev_output_str, wld->output_str);
 	}
+	char* t_charging = (is_charging) ? "+" : " ";
 	
-	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i %i %s %s %s", in, out, t, percent, &time_text[time_index], place, stale_text);
+	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i\n%i%s%s %s %s", in, out, t, percent, t_charging, &time_text[time_index], w->place, stale_text);
 
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
 

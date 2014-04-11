@@ -1,6 +1,8 @@
 #ifndef WEATHER_LAYER_H
 #define WEATHER_LAYER_H
 
+#include "weather_data.h"
+
 typedef struct {
 	TextLayer *temp_layer_background;
 	TextLayer *temp_layer;
@@ -8,6 +10,8 @@ typedef struct {
 	BitmapLayer *icon_layer;
 	char output_str[32];
 	char prev_output_str[32];
+	WeatherData last_weather_data;			// the last weather data seen, used to indicate when a change has happened
+	WeatherData trend_weather_data;			// last changed values, so trends can be shown
 } WeatherLayerData;
 
 typedef enum {
@@ -38,7 +42,6 @@ typedef enum {
 } WeatherIcon;
 
 typedef Layer WeatherLayer;
-#include "weather_data.h"
 
 WeatherLayer *weather_layer_create(GRect frame);
 void weather_layer_destroy(WeatherLayer* weather_layer);

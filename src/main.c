@@ -22,7 +22,12 @@ GFont font_time;
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
-  if (units_changed & MINUTE_UNIT) {
+  int b_request_weather = 0;
+  
+  if (units_changed & MINUTE_UNIT) 
+  {
+	b_request_weather = ((tick_time->tm_min % 15) == 0);
+  
     // Update the time - Fix to deal with 12 / 24 centering bug
     time_t currentTime = time(0);
     struct tm *currentLocalTime = localtime(&currentTime);
@@ -40,7 +45,9 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 
     text_layer_set_text(time_layer, time_text);
   }
-  if (units_changed & DAY_UNIT) {
+  
+  if (units_changed & DAY_UNIT) 
+  {
     // Update the date - Without a leading 0 on the day of the month
     char day_text[4];
     strftime(day_text, sizeof(day_text), "%a", tick_time);
@@ -64,7 +71,8 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
     }
     animation_step = (animation_step + 1) % 3;
   }
-  else {
+  else 
+  {
   
 	static int first_update = 1;
 	if(first_update)
@@ -75,28 +83,28 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	}
   
     // Update the weather icon and temperature
-    if (weather_data->error) {
+    if (weather_data->error) 
+	{
       weather_layer_set_icon(weather_layer, WEATHER_ICON_PHONE_ERROR);
     }
-    else {
-      // Show the temperature as 'stale' if it has not been updated in 30 minutes
-      bool stale = false;
-      if (weather_data->updated < time(NULL) - 30*60) {
-        stale = true;
-      }
-      weather_layer_set_temperature(weather_layer, weather_data, stale);
+    else 
+	{
+		// Show the temperature as 'stale' if it has not been updated in 30 minutes
+		bool stale = (weather_data->updated < time(NULL) - 30*60);
+    
+		weather_layer_set_temperature(weather_layer, weather_data, stale);
+	  
+		// Day/night check
+		bool night_time = (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset);
 
-      // Day/night check
-      bool night_time = false;
-      if (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset)
-        night_time = true;
-      weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, night_time));
+		weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, night_time));
     }
   }
 
-  // Refresh the weather info every 15 minutes
-  if ((units_changed & MINUTE_UNIT) && ((tick_time->tm_min % 15) == 0))
+  if(b_request_weather)
   {
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "15 minute weather update");
+
     request_weather();
   }
 }
@@ -145,10 +153,18 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 		// update if we haven't updated for at least 3 minutes
 		if (weather_data->updated < time(NULL) - 60*3) 
 		{
-			light_enable_interaction();
-		
 			request_weather();
 
+			light_enable_interaction();
+		
+			// Vibe pattern: ms on/off/on:
+			static const uint32_t const segments[] = { 50 };
+			VibePattern pat = {
+				.durations = segments,
+				.num_segments = ARRAY_LENGTH(segments),
+			};
+			vibes_enqueue_custom_pattern(pat); 
+			
 			APP_LOG(APP_LOG_LEVEL_DEBUG, "movement, and need to update weather\n");
 		}
 		
