@@ -84,16 +84,41 @@ void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
 
 void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, bool is_stale) 
 {
-  WeatherLayerData *wld = layer_get_data(weather_layer);
+	WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  int16_t t = w->temperature;
-  int16_t in = w->intemp;
-  int16_t out = w->outtemp;
+	int changed = 0;
+	
+	if(wld->last_weather_data.temperature != w->temperature)
+	{
+		changed = 1;
+		wld->trend_weather_data.temperature = wld->last_weather_data.temperature;
+	}
+	const char* s_trend_temperature = (w->temperature > wld->trend_weather_data.temperature) ? "+" : ".";
+
+	if(wld->last_weather_data.intemp != w->intemp)
+	{
+		changed = 1;
+		wld->trend_weather_data.intemp = wld->last_weather_data.intemp;
+	}
+	const char* s_trend_intemp = (w->intemp > wld->trend_weather_data.intemp) ? "+" : ".";
+
+	if(wld->last_weather_data.outtemp != w->outtemp)
+	{
+		changed = 1;
+		wld->trend_weather_data.outtemp = wld->last_weather_data.outtemp;
+	}
+	const char* s_trend_outtemp = (w->outtemp > wld->trend_weather_data.outtemp) ? "+" : ".";
+		
+	wld->last_weather_data = *w;
   
-  BatteryChargeState bat = battery_state_service_peek();
+	int16_t t = w->temperature;
+	int16_t in = w->intemp;
+	int16_t out = w->outtemp;
   
-  uint8_t percent = bat.charge_percent;
-  bool is_charging = bat.is_charging;
+	BatteryChargeState bat = battery_state_service_peek();
+
+	uint8_t percent = bat.charge_percent;
+	bool is_charging = bat.is_charging;
 
     struct tm *currentLocalTime = localtime(&w->updated);
 
@@ -111,17 +136,12 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	
 	char* stale_text = (is_stale)? "old" : "";
 
-	// excluding the update time time_text, has anything changed in the output
-	int changed = 0;
-	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i %i %s %s", in, out, t, percent, w->place, stale_text);
-	if(strcmp(wld->output_str, wld->prev_output_str))
-	{
-		changed = 1;
-		strcpy(wld->prev_output_str, wld->output_str);
-	}
-	char* t_charging = (is_charging) ? "+" : " ";
+	char* s_trend_charging = (is_charging) ? "+" : " ";
 	
-	snprintf(wld->output_str, sizeof(wld->output_str), "%i %i %i\n%i%s%s %s %s", in, out, t, percent, t_charging, &time_text[time_index], w->place, stale_text);
+	snprintf(wld->output_str, sizeof(wld->output_str), "%i%s%i%s%i%s\n%i%s %s\n%s %s", 
+		in, s_trend_intemp, out, s_trend_outtemp, t, s_trend_temperature,
+		percent, s_trend_charging, &time_text[time_index], 
+		w->place, stale_text);
 
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
 
@@ -129,47 +149,22 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	text_layer_set_text_color(wld->temp_layer, GColorWhite);
 	text_layer_set_font(wld->temp_layer, small_font);
 	text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
-/*
-  // Temperature between -9° -> 9° or 20° -> 99°
-  if ((t >= -9 && t <= 9) || (t >= 20 && t < 100)) {
-    text_layer_set_font(wld->temp_layer, small_font);
-    text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
 
-	// Is the temperature below zero?
-	if (wld->temp_str[0] == '-') {
-	  memmove(
-          wld->temp_str + 1 + 1,
-          wld->temp_str + 1,
-          5 - (1 + 1)
-      );
-	  memcpy(&wld->temp_str[1], " ", 1);
-	}
-  }
-  // Temperature between 10° -> 19°
-  else if (t >= 10 && t < 20) {
-    text_layer_set_font(wld->temp_layer, small_font);
-    text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
-  }
-  // Temperature above 99° or below -9°
-  else {
-    text_layer_set_font(wld->temp_layer, small_font);
-    text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
-  }
-*/
-
-  text_layer_set_text(wld->temp_layer, wld->output_str);
+	text_layer_set_text(wld->temp_layer, wld->output_str);
   
-  // has the output changed
-  if(changed)
-  {
-	// Vibe pattern: ms on/off/on:
-	static const uint32_t const segments[] = { 50, 100, 40 };
-	VibePattern pat = {
-		.durations = segments,
-		.num_segments = ARRAY_LENGTH(segments),
-	};
-	vibes_enqueue_custom_pattern(pat);  
-  }
+	// if there was a change alert the user
+	if(changed)
+	{
+		// Vibe pattern: ms on/off/on:
+		static const uint32_t const segments[] = { 50, 100, 40 };
+		VibePattern pat = {
+			.durations = segments,
+			.num_segments = ARRAY_LENGTH(segments),
+		};
+		vibes_enqueue_custom_pattern(pat);  
+		
+		light_enable_interaction();
+	}
 }
 
 void weather_layer_destroy(WeatherLayer* weather_layer) {
