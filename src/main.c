@@ -213,7 +213,7 @@ static void init(void) {
   // And then every second
   tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
   
-  uint32_t samples_per_update = 100;
+  uint32_t samples_per_update = 4;
   accel_data_service_subscribe(samples_per_update, handle_accelerator); 
 	
 }
