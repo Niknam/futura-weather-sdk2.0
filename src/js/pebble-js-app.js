@@ -58,21 +58,23 @@ function fetchWeather(latitude, longitude) {
                 response = JSON.parse(req.responseText);
                 var temperature, icon, city, sunrise, sunset, condition;
                 var current_time = Date.now() / 1000;
-                if (response) {
+                if (response) 
+				{
+					// note we multiply temps by 10 before returning them, this allows for more accurate trending information
                     var tempResult = response.main.temp;
                     if (response.sys.country === "US") {
                         // Convert temperature to Fahrenheit if user is within the US
-                        temperature = Math.round(((tempResult - 273.15) * 1.8) + 32);
+                        temperature = Math.round((((tempResult - 273.15) * 1.8) + 32) * 10);
                     }
                     else {
                         // Otherwise, convert temperature to Celsius
-                        temperature = Math.round(tempResult - 273.15);
+                        temperature = Math.round((tempResult - 273.15)*10);
                     }		 
                     condition = response.weather[0].id;
                     sunrise = response.sys.sunrise;
                     sunset = response.sys.sunset;
-                    intemp = Math.round(response.gary.intemp);
-                    outtemp = Math.round(response.gary.temp);
+                    intemp = Math.round(response.gary.intemp*10);
+                    outtemp = Math.round(response.gary.temp*10);
 
                     var place = response.gary.place;
 		    

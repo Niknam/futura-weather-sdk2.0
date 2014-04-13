@@ -151,7 +151,7 @@
       {
         "name": "FUTURA_18",
         "trackingAdjust": 3,
-        "characterRegex": "[A-Za-z0-9:^\u00b0 -\u002e]",
+        "characterRegex": "[A-Za-z0-9:\u00b0 -\u002e\u2191]",
         "file": "fonts/futura.ttf",
         "type": "font"
       },

@@ -111,9 +111,10 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 		
 	wld->last_weather_data = *w;
   
-	int16_t t = w->temperature;
-	int16_t in = w->intemp;
-	int16_t out = w->outtemp;
+	// values are multiplied by 10 in order to give more trending data
+	int16_t t = (w->temperature+5)/10;
+	int16_t in = (w->intemp+5)/10;
+	int16_t out = (w->outtemp+5)/10;
   
 	BatteryChargeState bat = battery_state_service_peek();
 
@@ -130,13 +131,14 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
                 currentLocalTime);
   
     // Drop the first char of time_text if needed
-    if (!clock_is_24h_style() && (time_text[0] == '0')) {
-      time_index++;
+    if (!clock_is_24h_style() && (time_text[0] == '0')) 
+	{
+		time_index++;
     }
 	
 	char* stale_text = (is_stale)? "old" : "";
 
-	char* s_trend_charging = (is_charging) ? "+" : " ";
+	char* s_trend_charging = (is_charging) ? "↑" : " ";
 	
 	snprintf(wld->output_str, sizeof(wld->output_str), "%i%s%i%s%i%s\n%i%s %s\n%s %s", 
 		in, s_trend_intemp, out, s_trend_outtemp, t, s_trend_temperature,
