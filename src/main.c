@@ -20,6 +20,37 @@ static char time_text[] = "00:00";
 GFont font_date;
 GFont font_time;
 
+static int i_dirty = 0;
+
+static void handle_tick(struct tm *tick_time, TimeUnits units_changed);
+
+void set_dirty()
+{
+	if(i_dirty < 0)
+	{
+		// update every second
+		tick_timer_service_unsubscribe();
+		tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+	}
+	
+	i_dirty = 10;
+}
+
+void done_dirty()
+{
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "done dirty %i", i_dirty);
+	if(i_dirty > 0)
+	{
+		i_dirty--;
+	}
+	else if(!i_dirty)
+	{
+		i_dirty = -1;
+		tick_timer_service_unsubscribe();
+		tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+	}
+}
+
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
   int b_request_weather = 0;
@@ -106,6 +137,11 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "15 minute weather update");
 
     request_weather();
+	set_dirty();
+  }
+  else
+  {
+	done_dirty();
   }
 }
 
@@ -154,6 +190,7 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 		if (weather_data->updated < time(NULL) - 60*3) 
 		{
 			request_weather();
+			set_dirty();
 
 			light_enable_interaction();
 		
@@ -170,6 +207,11 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 		
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "%i %i %i %i %i\n", (int)sum_z, (int)sum_delta_z, (int)max_z, (int)max_delta, (int)num_samples);
 	}
+}
+
+static void handle_battery_state(BatteryChargeState charge)
+{
+	set_dirty();
 }
 
 //#define TIME_FRAME      (GRect(0, 2, 144, 168-6))
@@ -210,17 +252,21 @@ static void init(void) {
   // Update the screen right away
   time_t now = time(NULL);
   handle_tick(localtime(&now), SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT );
-  // And then every second
-  tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+  
+  set_dirty();
   
   uint32_t samples_per_update = 4;
   accel_data_service_subscribe(samples_per_update, handle_accelerator); 
 	
+
+	battery_state_service_subscribe(handle_battery_state);	
 }
 
 static void deinit(void) {
   window_destroy(window);
   tick_timer_service_unsubscribe();
+  accel_data_service_unsubscribe();
+  battery_state_service_unsubscribe();
 
   text_layer_destroy(time_layer);
   text_layer_destroy(date_layer);
