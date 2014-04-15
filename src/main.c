@@ -17,8 +17,8 @@ static char date_text[] = "XXX 00";
 static char time_text[] = "00:00";
 
 /* Preload the fonts */
-GFont font_date;
-GFont font_time;
+static GFont font_date;
+static GFont font_time;
 
 static int i_dirty = 0;
 
@@ -51,12 +51,40 @@ void done_dirty()
 	}
 }
 
+static const int history_g_len = 26;
+static AccelData history_g[26];
+static AccelData min_a;
+static AccelData max_a;
+static int history_g_i = -1;
+
+static void request_weather_and_alert()
+{
+	// update if we haven't updated for at least 3 minutes
+	if (weather_data->updated < time(NULL) - 60*3) 
+	{
+		request_weather();
+		set_dirty();
+
+		light_enable_interaction();
+
+		// Vibe pattern: ms on/off/on:
+		static const uint32_t const segments[] = { 50 };
+		VibePattern pat = {
+			.durations = segments,
+			.num_segments = ARRAY_LENGTH(segments),
+		};
+		vibes_enqueue_custom_pattern(pat); 
+		
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "updating weather");
+	}
+}
+
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
   int b_request_weather = 0;
   
   if (units_changed & MINUTE_UNIT) 
-  {
+  {  
 	b_request_weather = ((tick_time->tm_min % 15) == 0);
   
     // Update the time - Fix to deal with 12 / 24 centering bug
@@ -75,6 +103,8 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
     }
 
     text_layer_set_text(time_layer, time_text);
+
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "accel %i %i %i", (int)history_g[history_g_i].x, (int)history_g[history_g_i].y, (int)history_g[history_g_i].z);
   }
   
   if (units_changed & DAY_UNIT) 
@@ -134,10 +164,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 
   if(b_request_weather)
   {
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "15 minute weather update");
-
-    request_weather();
-	set_dirty();
+	request_weather_and_alert();
   }
   else
   {
@@ -147,6 +174,68 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 
 static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 {
+	if(history_g_i < 0)
+	{
+		memset(&history_g, 0, sizeof(history_g));
+		history_g_i = 0;
+	}
+	
+	for(uint32_t i = 1; i < num_samples; i++)
+	{
+		// ignore if vibrating
+		if(samples[i].did_vibrate)
+		{
+			return;
+		}
+		
+		// previous sample of g
+		AccelData *prevg = &history_g[history_g_i];
+
+		// increment the index and when we get to the end wrap around to the start
+		history_g_i++;
+		if(history_g_i >= history_g_len)
+		{
+			history_g_i -= history_g_len;
+		}
+		
+		// current value of g we are calculating now
+		AccelData *g = &history_g[history_g_i];
+		
+		// g = g*0.9+a*0.1
+		g->x = (prevg->x*9 + samples[i].x*1)/10;
+		g->y = (prevg->y*9 + samples[i].y*1)/10;
+		g->z = (prevg->z*9 + samples[i].z*1)/10;
+		
+		// now look at the oldest sample we have, which will be the next one in the ring buffer
+		int oldest_g = history_g_i + 1;
+		if(oldest_g >= history_g_len)
+		{
+			oldest_g -= history_g_len;
+		}
+		
+		AccelData *oldg = &history_g[oldest_g];
+		
+		// now get the dot product of the two gravity direction vectors
+		int dot_product = g->x*oldg->x + g->y*oldg->y + g->z*oldg->z;
+		
+		// if the vectors are perpendicular the dot product is zero, see how close we are to zero, e.g. if the watch had just rotated 90 degrees
+		if((dot_product > -100000) && (dot_product < 100000))
+		{
+			// g in this direction means the watch is at about the angle when being looked at
+			if((g->y < -600) && (g->z < -600))
+			{
+				request_weather_and_alert();
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "dot prod %i", dot_product);
+			}
+		}
+		
+		// now subtract g from the acceleration to see if the watch is actually moving
+		samples[i].x = samples[i].x - g->x; 
+		samples[i].y = samples[i].y - g->y; 
+		samples[i].z = samples[i].z - g->z; 
+	}
+	
+	/*
 	if(num_samples < 2)
 	{
 		return;
@@ -186,27 +275,11 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 	
 	if(max_z < -2000)
 	{
-		// update if we haven't updated for at least 3 minutes
-		if (weather_data->updated < time(NULL) - 60*3) 
-		{
-			request_weather();
-			set_dirty();
-
-			light_enable_interaction();
-		
-			// Vibe pattern: ms on/off/on:
-			static const uint32_t const segments[] = { 50 };
-			VibePattern pat = {
-				.durations = segments,
-				.num_segments = ARRAY_LENGTH(segments),
-			};
-			vibes_enqueue_custom_pattern(pat); 
-			
-			APP_LOG(APP_LOG_LEVEL_DEBUG, "movement, and need to update weather\n");
-		}
+		request_weather_and_alert();
 		
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "%i %i %i %i %i\n", (int)sum_z, (int)sum_delta_z, (int)max_z, (int)max_delta, (int)num_samples);
 	}
+	*/
 }
 
 static void handle_battery_state(BatteryChargeState charge)
@@ -219,7 +292,8 @@ static void handle_battery_state(BatteryChargeState charge)
 #define TIME_FRAME      (GRect(0, 2, 144, 168-6))
 #define DATE_FRAME      (GRect(44, 66, 144-44, 168-62))
 
-static void init(void) {
+static void init(void) 
+{
   window = window_create();
   window_stack_push(window, true /* Animated */);
   window_set_background_color(window, GColorBlack);
@@ -258,7 +332,6 @@ static void init(void) {
   uint32_t samples_per_update = 4;
   accel_data_service_subscribe(samples_per_update, handle_accelerator); 
 	
-
 	battery_state_service_subscribe(handle_battery_state);	
 }
 
