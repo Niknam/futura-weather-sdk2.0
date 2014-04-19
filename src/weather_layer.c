@@ -152,8 +152,8 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 
 	text_layer_set_text(wld->temp_layer, wld->output_str);
   
-	// if there was a change alert the user
-	if(changed && !w->b_still_mode)
+	// if there was a change alert the user. If we're in still mode nobody is looking so save the battery instead, unless we are charging.
+	if(changed && ((!w->b_still_mode || is_charging)))
 	{
 		// Vibe pattern: ms on/off/on:
 		static const uint32_t const segments[] = { 50, 100, 40 };
