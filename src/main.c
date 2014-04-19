@@ -20,6 +20,9 @@ static char time_text[] = "00:00";
 static GFont font_date;
 static GFont font_time;
 
+static int b_still_mode = 0;
+static time_t time_still_mode = 0;
+
 static int i_dirty = 0;
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed);
@@ -56,10 +59,16 @@ static AccelData min_a;
 static AccelData max_a;
 static int history_g_i = -1;
 
+static void reset_min_max()
+{
+	memset(&min_a, 0, sizeof(min_a));
+	memset(&max_a, 0, sizeof(max_a));
+}
+
 static void request_weather_and_alert()
 {
 	// update if we haven't updated for at least 3 minutes
-	if (weather_data->updated < time(NULL) - 60*3) 
+	if (weather_data->updated < time(0) - 60*3) 
 	{
 		request_weather();
 		set_dirty();
@@ -84,7 +93,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   
   if (units_changed & MINUTE_UNIT) 
   {  
-	b_request_weather = ((tick_time->tm_min % 15) == 0);
+	b_request_weather = ((!b_still_mode) && (tick_time->tm_min % 15) == 0);
   
     // Update the time - Fix to deal with 12 / 24 centering bug
     time_t currentTime = time(0);
@@ -103,7 +112,23 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 
     text_layer_set_text(time_layer, time_text);
 
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "accel %i %i %i", (int)history_g[history_g_i].x, (int)history_g[history_g_i].y, (int)history_g[history_g_i].z);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "accel %i %i %i", (int)history_g[history_g_i].x, (int)history_g[history_g_i].y, (int)history_g[history_g_i].z);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "min_a %i %i %i", (int)min_a.x, (int)min_a.y, (int)min_a.z);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "max_a %i %i %i", (int)max_a.x, (int)max_a.y, (int)max_a.z);
+	
+	if(!b_still_mode)
+	{
+		if(max_a.z < 200 && min_a.z > -200)
+		{
+			b_still_mode = 1;
+			time_still_mode = time(0);
+		    APP_LOG(APP_LOG_LEVEL_DEBUG, "in still mode");
+		}
+		else
+		{
+			reset_min_max();
+		}
+	}
   }
   
   if (units_changed & DAY_UNIT) 
@@ -173,6 +198,11 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 
 static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 {
+	if(!num_samples)
+	{
+		return;
+	}
+	
 	if(history_g_i < 0)
 	{
 		memset(&history_g, 0, sizeof(history_g));
@@ -180,6 +210,8 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 	}
 	
 	const int history_g_len = sizeof(history_g)/sizeof(history_g[0]);
+	
+	int init_min_max = 0;
 	
 	for(uint32_t i = 1; i < num_samples; i++)
 	{
@@ -239,6 +271,60 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 		samples[i].x = samples[i].x - g->x; 
 		samples[i].y = samples[i].y - g->y; 
 		samples[i].z = samples[i].z - g->z; 
+		
+		// initialise
+		if(!min_a.z && !min_a.y && !min_a.x)
+		{
+			init_min_max = 1;
+			min_a = samples[i];
+			max_a = samples[i];
+		}
+
+		if(min_a.x > samples[i].x)
+		{
+			min_a.x = samples[i].x;
+		}
+		if(min_a.y > samples[i].y)
+		{
+			min_a.y = samples[i].y;
+		}
+		if(min_a.z > samples[i].z)
+		{
+			min_a.z = samples[i].z;
+		}
+		if(max_a.x < samples[i].x)
+		{
+			max_a.x = samples[i].x;
+		}
+		if(max_a.y < samples[i].y)
+		{
+			max_a.y = samples[i].y;
+		}
+		if(max_a.z < samples[i].z)
+		{
+			max_a.z = samples[i].z;
+		}
+	}
+	
+	if(init_min_max)
+	{
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "initialise min/max a");
+	}
+	
+	if(b_still_mode)
+	{
+		if(max_a.z > 200 || min_a.z < -200)
+		{
+			// not in still mode any more
+			b_still_mode = 0;
+			// need to be in still mode for this long before updating the display
+			if(time(0) - time_still_mode > 60*1)
+			{
+				request_weather_and_alert();
+			}
+			
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "out of still mode");
+		}
 	}
 	
 	/*
@@ -309,7 +395,9 @@ static void init(void)
   weather_data = malloc(sizeof(WeatherData));
   memset(weather_data, 0, sizeof(WeatherData));
   init_network(weather_data);
-
+  
+  reset_min_max();
+  
   font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
   font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
 
