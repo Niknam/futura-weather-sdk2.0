@@ -116,10 +116,8 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	int16_t in = (w->intemp+5)/10;
 	int16_t out = (w->outtemp+5)/10;
   
-	BatteryChargeState bat = battery_state_service_peek();
-
-	uint8_t percent = bat.charge_percent;
-	bool is_charging = bat.is_charging;
+	uint8_t percent = w->battery.charge_percent;
+	bool is_charging = w->battery.is_charging;
 
     struct tm *currentLocalTime = localtime(&w->updated);
 
@@ -138,7 +136,7 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	
 	char* stale_text = (is_stale)? "old" : "";
 
-	char* s_trend_charging = (is_charging) ? "↑" : " ";
+	char* s_trend_charging = (is_charging) ? "+" : " ";
 	
 	snprintf(wld->output_str, sizeof(wld->output_str), "%i%s%i%s%i%s\n%i%s %s\n%s %s", 
 		in, s_trend_intemp, out, s_trend_outtemp, t, s_trend_temperature,

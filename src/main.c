@@ -227,9 +227,14 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 				request_weather_and_alert();
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "dot prod %i", dot_product);
 			}
+			else
+			{
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "dot prod %i ignoring rotate because y=%i, z=%i ", dot_product, g->y, g->z);
+			
+			}
 		}
 		
-		// now subtract g from the acceleration to see if the watch is actually moving
+		// now subtract g from the acceleration to see if the watch is actually accelerating
 		samples[i].x = samples[i].x - g->x; 
 		samples[i].y = samples[i].y - g->y; 
 		samples[i].z = samples[i].z - g->z; 
@@ -284,6 +289,8 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 
 static void handle_battery_state(BatteryChargeState charge)
 {
+	weather_data->battery = charge;
+	
 	set_dirty();
 }
 
@@ -299,6 +306,7 @@ static void init(void)
   window_set_background_color(window, GColorBlack);
 
   weather_data = malloc(sizeof(WeatherData));
+  memset(weather_data, 0, sizeof(WeatherData));
   init_network(weather_data);
 
   font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
@@ -332,6 +340,7 @@ static void init(void)
   uint32_t samples_per_update = 4;
   accel_data_service_subscribe(samples_per_update, handle_accelerator); 
 	
+	weather_data->battery = battery_state_service_peek();
 	battery_state_service_subscribe(handle_battery_state);	
 }
 

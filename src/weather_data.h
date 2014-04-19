@@ -17,6 +17,8 @@ typedef struct {
   int sunset;
   int current_time;
   char place[60];
+  BatteryChargeState battery;
+  int night_time;
   time_t updated;
   WeatherError error;
 } WeatherData;
