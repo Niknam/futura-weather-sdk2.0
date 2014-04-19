@@ -57,6 +57,12 @@ WeatherLayer *weather_layer_create(GRect frame)	// 0, 60, 144, 108
   text_layer_set_font(wld->temperature_layer, small_font);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temperature_layer));
 
+  wld->update_time_layer = text_layer_create(GRect(60, 54, 144-60, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
+  text_layer_set_background_color(wld->update_time_layer, GColorClear);
+  text_layer_set_text_alignment(wld->update_time_layer, GTextAlignmentRight);
+  text_layer_set_font(wld->update_time_layer, small_font);
+  layer_add_child(weather_layer, text_layer_get_layer(wld->update_time_layer));
+
   // Add bitmap layer
   //wld->icon_layer = bitmap_layer_create(GRect(9, 13, 60, 60));
   wld->icon_layer = bitmap_layer_create(GRect(9, 3, 30, 30));
@@ -111,7 +117,7 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 		
 	wld->last_weather_data = *w;
   
-	// values are multiplied by 10 in order to give more trending data
+	// values are multiplied by 10 in order to give more trending data, add 5 to round up
 	int16_t t = (w->temperature+5)/10;
 	int16_t in = (w->intemp+5)/10;
 	int16_t out = (w->outtemp+5)/10;
@@ -119,14 +125,14 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	uint8_t percent = w->battery.charge_percent;
 	bool is_charging = w->battery.is_charging;
 
-    struct tm *currentLocalTime = localtime(&w->updated);
+    struct tm *updated_time = localtime(&w->updated);
 
 	int time_index = 0;
 	char time_text[10];
     strftime(   time_text, 
                 sizeof(time_text), 
                 clock_is_24h_style() ? "%R" : "%I:%M", 
-                currentLocalTime);
+                updated_time);
   
     // Drop the first char of time_text if needed
     if (!clock_is_24h_style() && (time_text[0] == '0')) 
@@ -138,9 +144,9 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 
 	char* s_trend_charging = (is_charging) ? "+" : " ";
 	
-	snprintf(wld->output_str, sizeof(wld->output_str), "%i%s%i%s%i%s\n%i%s %s\n%s %s", 
+	snprintf(wld->output_str, sizeof(wld->output_str), "%i%s%i%s%i%s\n%i%s\n%s %s", 
 		in, s_trend_intemp, out, s_trend_outtemp, t, s_trend_temperature,
-		percent, s_trend_charging, &time_text[time_index], 
+		percent, s_trend_charging, //&time_text[time_index], 
 		w->place, stale_text);
 
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
@@ -149,9 +155,15 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	text_layer_set_text_color(wld->temperature_layer, GColorWhite);
 	text_layer_set_font(wld->temperature_layer, small_font);
 	text_layer_set_text_alignment(wld->temperature_layer, GTextAlignmentLeft);
-
 	text_layer_set_text(wld->temperature_layer, wld->output_str);
-  
+
+	static char s_update_time[10];
+	snprintf(s_update_time, sizeof(s_update_time), "%s", time_text);
+	text_layer_set_text_color(wld->update_time_layer, GColorWhite);
+	text_layer_set_font(wld->update_time_layer, small_font);
+	text_layer_set_text_alignment(wld->update_time_layer, GTextAlignmentRight);
+	text_layer_set_text(wld->update_time_layer, s_update_time);
+
 	// if there was a change alert the user. If we're in still mode nobody is looking so save the battery instead, unless we are charging.
 	if(changed && ((!w->b_still_mode) || is_charging))
 	{
