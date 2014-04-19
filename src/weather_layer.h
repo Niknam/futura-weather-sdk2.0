@@ -4,8 +4,8 @@
 #include "weather_data.h"
 
 typedef struct {
-	TextLayer *temp_layer_background;
-	TextLayer *temp_layer;
+	TextLayer *temperature_layer_background;
+	TextLayer *temperature_layer;
 	GBitmap *icon;
 	BitmapLayer *icon_layer;
 	char output_str[32];

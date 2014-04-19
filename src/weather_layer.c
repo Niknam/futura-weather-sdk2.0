@@ -45,17 +45,17 @@ WeatherLayer *weather_layer_create(GRect frame)	// 0, 60, 144, 108
 
 
   // Add background layer - used purely to provide a solid background color - note this leaves a 10 line gap from the frame rect and this rect
-  wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68)); // 0, 10, 144, 68
-  text_layer_set_background_color(wld->temp_layer_background, GColorBlack);
-  //layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer_background));
+  wld->temperature_layer_background = text_layer_create(GRect(0, 10, 144, 68)); // 0, 10, 144, 68
+  text_layer_set_background_color(wld->temperature_layer_background, GColorBlack);
+  //layer_add_child(weather_layer, text_layer_get_layer(wld->temperature_layer_background));
 
   // Add temperature layer
-  //wld->temp_layer = text_layer_create(GRect(70, 6, 72, 80));
-  wld->temp_layer = text_layer_create(GRect(0, 36, 142, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
-  text_layer_set_background_color(wld->temp_layer, GColorClear);
-  text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
-  text_layer_set_font(wld->temp_layer, small_font);
-  layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer));
+  //wld->temperature_layer = text_layer_create(GRect(70, 6, 72, 80));
+  wld->temperature_layer = text_layer_create(GRect(0, 36, 142, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
+  text_layer_set_background_color(wld->temperature_layer, GColorClear);
+  text_layer_set_text_alignment(wld->temperature_layer, GTextAlignmentCenter);
+  text_layer_set_font(wld->temperature_layer, small_font);
+  layer_add_child(weather_layer, text_layer_get_layer(wld->temperature_layer));
 
   // Add bitmap layer
   //wld->icon_layer = bitmap_layer_create(GRect(9, 13, 60, 60));
@@ -146,14 +146,14 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);
 
   
-	text_layer_set_text_color(wld->temp_layer, GColorWhite);
-	text_layer_set_font(wld->temp_layer, small_font);
-	text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
+	text_layer_set_text_color(wld->temperature_layer, GColorWhite);
+	text_layer_set_font(wld->temperature_layer, small_font);
+	text_layer_set_text_alignment(wld->temperature_layer, GTextAlignmentLeft);
 
-	text_layer_set_text(wld->temp_layer, wld->output_str);
+	text_layer_set_text(wld->temperature_layer, wld->output_str);
   
 	// if there was a change alert the user. If we're in still mode nobody is looking so save the battery instead, unless we are charging.
-	if(changed && ((!w->b_still_mode || is_charging)))
+	if(changed && ((!w->b_still_mode) || is_charging))
 	{
 		// Vibe pattern: ms on/off/on:
 		static const uint32_t const segments[] = { 50, 100, 40 };
@@ -170,8 +170,8 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 void weather_layer_destroy(WeatherLayer* weather_layer) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  text_layer_destroy(wld->temp_layer);
-  text_layer_destroy(wld->temp_layer_background);
+  text_layer_destroy(wld->temperature_layer);
+  text_layer_destroy(wld->temperature_layer_background);
   bitmap_layer_destroy(wld->icon_layer);
 
   // Destroy the previous bitmap if we have one
