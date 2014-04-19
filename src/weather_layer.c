@@ -153,7 +153,7 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	text_layer_set_text(wld->temp_layer, wld->output_str);
   
 	// if there was a change alert the user
-	if(changed)
+	if(changed && !w->b_still_mode)
 	{
 		// Vibe pattern: ms on/off/on:
 		static const uint32_t const segments[] = { 50, 100, 40 };

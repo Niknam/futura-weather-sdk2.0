@@ -22,7 +22,6 @@ static GFont font_time;
 
 // the threshold under which we take acceleration to be zero
 static const int still_mode_jitter_threshold = 200;
-static int b_still_mode = 0;
 static time_t time_still_mode = 0;
 
 static int i_dirty = 0;
@@ -95,7 +94,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   
   if (units_changed & MINUTE_UNIT) 
   {  
-	b_request_weather = ((!b_still_mode) && (tick_time->tm_min % 15) == 0);
+	b_request_weather = ((!weather_data->b_still_mode) && (tick_time->tm_min % 15) == 0);
   
     // Update the time - Fix to deal with 12 / 24 centering bug
     time_t currentTime = time(0);
@@ -118,11 +117,11 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "min_a %i %i %i", (int)min_a.x, (int)min_a.y, (int)min_a.z);
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "max_a %i %i %i", (int)max_a.x, (int)max_a.y, (int)max_a.z);
 	
-	if(!b_still_mode)
+	if(!weather_data->b_still_mode)
 	{
 		if(max_a.z < still_mode_jitter_threshold && min_a.z > -still_mode_jitter_threshold)
 		{
-			b_still_mode = 1;
+			weather_data->b_still_mode = 1;
 			time_still_mode = time(0);
 		    APP_LOG(APP_LOG_LEVEL_DEBUG, "in still mode");
 		}
@@ -313,12 +312,12 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "initialise min/max a");
 	}
 	
-	if(b_still_mode)
+	if(weather_data->b_still_mode)
 	{
 		if(max_a.z > still_mode_jitter_threshold || min_a.z < -still_mode_jitter_threshold)
 		{
 			// not in still mode any more
-			b_still_mode = 0;
+			weather_data->b_still_mode = 0;
 			// need to be in still mode for this long before updating the display
 			if(time(0) - time_still_mode > 60*1)
 			{

@@ -18,7 +18,8 @@ typedef struct {
   int current_time;
   char place[60];
   BatteryChargeState battery;
-  int night_time;
+  //int night_time;
+  int b_still_mode;
   time_t updated;
   WeatherError error;
 } WeatherData;
