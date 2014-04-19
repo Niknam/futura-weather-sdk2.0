@@ -51,7 +51,6 @@ void done_dirty()
 	}
 }
 
-static const int history_g_len = 26;
 static AccelData history_g[26];
 static AccelData min_a;
 static AccelData max_a;
@@ -179,6 +178,8 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 		memset(&history_g, 0, sizeof(history_g));
 		history_g_i = 0;
 	}
+	
+	const int history_g_len = sizeof(history_g)/sizeof(history_g[0]);
 	
 	for(uint32_t i = 1; i < num_samples; i++)
 	{
