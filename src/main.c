@@ -20,6 +20,8 @@ static char time_text[] = "00:00";
 static GFont font_date;
 static GFont font_time;
 
+// the threshold under which we take acceleration to be zero
+static const int still_mode_jitter_threshold = 200;
 static int b_still_mode = 0;
 static time_t time_still_mode = 0;
 
@@ -118,7 +120,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	
 	if(!b_still_mode)
 	{
-		if(max_a.z < 200 && min_a.z > -200)
+		if(max_a.z < still_mode_jitter_threshold && min_a.z > -still_mode_jitter_threshold)
 		{
 			b_still_mode = 1;
 			time_still_mode = time(0);
@@ -313,7 +315,7 @@ static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 	
 	if(b_still_mode)
 	{
-		if(max_a.z > 200 || min_a.z < -200)
+		if(max_a.z > still_mode_jitter_threshold || min_a.z < -still_mode_jitter_threshold)
 		{
 			// not in still mode any more
 			b_still_mode = 0;
