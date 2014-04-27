@@ -197,6 +197,12 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   }
 }
 
+static void handle_tap(AccelAxisType axis, int32_t direction)
+{
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "tap axis %i direction %i", (int)axis, (int)direction);
+	request_weather_and_alert();
+}
+
 static void handle_accelerator(AccelData *samples, uint32_t num_samples)
 {
 	if(!num_samples)
@@ -429,6 +435,9 @@ static void init(void)
   
   uint32_t samples_per_update = 4;
   accel_data_service_subscribe(samples_per_update, handle_accelerator); 
+  
+  accel_tap_service_subscribe(handle_tap);	
+
 	
 	weather_data->battery = battery_state_service_peek();
 	battery_state_service_subscribe(handle_battery_state);	
@@ -439,6 +448,7 @@ static void deinit(void) {
   tick_timer_service_unsubscribe();
   accel_data_service_unsubscribe();
   battery_state_service_unsubscribe();
+  accel_tap_service_unsubscribe();	
 
   text_layer_destroy(time_layer);
   text_layer_destroy(date_layer);
