@@ -12,5 +12,7 @@ This is based on Futura Weather 2, adapted to show information from my own weath
 entered and battery saving happens by not updating the weather every 15 minutes.
  - When leaving still mode the weather is updated immediately.
  - A weather update is never done when the last one was within 3 minutes.
- - For temperatures, the trend up or down is also indicated
- - Time when the last weather update happened is shown
+ - For temperatures, the trend up or down is also indicated.
+ - Time when the last weather update happened is shown.
+ - Reduced power consumption by not having a time and display update every second, now it is every minute and 
+only switches to every second for 10 seconds following a weather update event.
