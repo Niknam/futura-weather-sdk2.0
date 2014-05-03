@@ -390,8 +390,8 @@ static void handle_battery_state(BatteryChargeState charge)
 
 //#define TIME_FRAME      (GRect(0, 2, 144, 168-6))
 //#define DATE_FRAME      (GRect(1, 66, 144, 168-62))
-#define TIME_FRAME      (GRect(0, 2, 144, 168-6))
-#define DATE_FRAME      (GRect(44, 66, 144-44, 168-62))
+#define TIME_FRAME      (GRect(0, -8, 144, 168))	// -8 gets the time right on the top pixel line
+#define DATE_FRAME      (GRect(44, 66-10, 144-44, 168))
 
 static void init(void) 
 {
@@ -424,7 +424,7 @@ static void init(void)
 
   // Add weather layer
   //weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
-  weather_layer = weather_layer_create(GRect(0, 60, 144, 108)); // screen res is 144x168
+  weather_layer = weather_layer_create(GRect(0, 50, 144, 118)); // screen res is 144x168
   layer_add_child(window_get_root_layer(window), weather_layer);
 
   // Update the screen right away
