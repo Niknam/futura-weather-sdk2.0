@@ -26,6 +26,8 @@ static time_t time_still_mode = 0;
 
 static int i_dirty = 0;
 
+static bool b_night_time = 0;
+
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed);
 
 void set_dirty()
@@ -74,7 +76,11 @@ static void request_weather_and_alert()
 		request_weather();
 		set_dirty();
 
-		light_enable_interaction();
+		// turn on the light if after sunset and before sunrise
+		if(b_night_time)
+		{
+			light_enable_interaction();
+		}
 
 		// Vibe pattern: ms on/off/on:
 		static const uint32_t const segments[] = { 50 };
@@ -181,9 +187,9 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 		weather_layer_set_temperature(weather_layer, weather_data, stale);
 	  
 		// Day/night check
-		bool night_time = (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset);
+		b_night_time = (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset);
 
-		weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, night_time));
+		weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, b_night_time));
     }
   }
 

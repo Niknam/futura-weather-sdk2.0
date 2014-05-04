@@ -196,6 +196,57 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
   fonts_unload_custom_font(small_font);
 }
 
+
+/*
+ * Converts a yahoo weather code to one of our icons.
+ * Refer to: https://developer.yahoo.com/weather/
+ */
+ 
+uint8_t yahoo_weather_icon_for_condition(int c) 
+{
+	switch(c)
+	{
+		// 19 means dust, 21 haze, 22 smoky
+		
+		case 32: case 34:
+			return WEATHER_ICON_CLEAR_DAY;
+		case 31: case 33:
+			return WEATHER_ICON_CLEAR_NIGHT;
+		case 10: case 11: case 12: case 35: case 40:
+			return WEATHER_ICON_RAIN;
+		case 13: case 14: case 15: case 16: case 17: case 41: case 46:
+			return WEATHER_ICON_SNOW;
+		case 18:
+			return WEATHER_ICON_SLEET;
+		case 23: case 24:
+			return WEATHER_ICON_WIND;
+		case 20:
+			return WEATHER_ICON_FOG;
+		case 26: case 44:
+			return WEATHER_ICON_CLOUDY;
+		case 28: case 30:
+			return WEATHER_ICON_PARTLY_CLOUDY_DAY;
+		case 27: case 29:
+			return WEATHER_ICON_PARTLY_CLOUDY_NIGHT;
+		case 1: case 2: case 3:	case 4: case 37: case 38: case 39: case 45: case 47:
+			return WEATHER_ICON_THUNDER;
+		case 5: case 42: case 43:
+			return WEATHER_ICON_RAIN_SNOW;
+		case 6:
+			return WEATHER_ICON_RAIN_SLEET;
+		case 7:
+			return WEATHER_ICON_SNOW_SLEET;
+		case 25:
+			return WEATHER_ICON_COLD;
+		case 36:
+			return WEATHER_ICON_HOT;
+		case 8: case 9:
+			return WEATHER_ICON_DRIZZLE;
+		
+	}
+
+	return WEATHER_ICON_NOT_AVAILABLE;
+}
 /*
  * Converts an API Weather Condition into one of our icons.
  * Refer to: http://bugs.openweathermap.org/projects/api/wiki/Weather_Condition_Codes
