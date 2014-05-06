@@ -78,11 +78,25 @@ function fetchWeather(latitude, longitude) {
 
                     var place = response.gary.place;
 		    
-                    console.log("place:" + place + " in:" + intemp + " Temperature: " + temperature + " Condition: " + condition + " Sunrise: " + sunrise +
-                              " Sunset: " + sunset + " Now: " + Date.now() / 1000);
+                    console.log("place:" + place + " in:" + intemp + " Temperature: " + temperature + 
+							" Condition: " + condition + " Sunrise: " + sunrise + " Sunset: " + sunset + 
+							" ccnow: " + condition + " Sunrise: " + sunrise + " Sunset: " + sunset + 
+							" cc: " + response.gary.ccnow,
+							" cc0: " + response.gary.cc0,
+							" cc1: " + response.gary.cc1,
+							" cc2: " + response.gary.cc2,
+							" cc3: " + response.gary.cc3,
+							" cc4: " + response.gary.cc4
+							);
                               
                     Pebble.sendAppMessage({
                         "condition": condition,
+                        "cc": response.gary.ccnow,
+                        "cc0": response.gary.cc0,
+                        "cc1": response.gary.cc1,
+                        "cc2": response.gary.cc2,
+                        "cc3": response.gary.cc3,
+                        "cc4": response.gary.cc4,
                         "temperature": temperature,
 						"intemp": intemp,
 						"outtemp": outtemp,

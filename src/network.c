@@ -1,7 +1,8 @@
 #include <pebble.h>
 #include "network.h"
 
-static void appmsg_in_received(DictionaryIterator *received, void *context) {
+static void appmsg_in_received(DictionaryIterator *received, void *context) 
+{
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In received.");
 
   WeatherData *weather = (WeatherData*) context;
@@ -41,10 +42,29 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
   }
 }
 
-static void appmsg_in_dropped(AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "In dropped: %i", reason);
-  // Request a new update...
-  request_weather();
+static void appmsg_in_dropped(AppMessageResult reason, void *context) 
+{
+	switch(reason)
+	{
+		case APP_MSG_BUFFER_OVERFLOW:
+		{
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "In dropped: overflow");
+			break;
+		}
+		
+		case APP_MSG_BUSY:
+		{
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "In dropped: busy");
+			break;
+		}
+		
+		default:
+		{
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "In dropped: %i", reason);
+			// Request a new update...
+			request_weather();
+		}
+	}
 }
 
 static void appmsg_out_sent(DictionaryIterator *sent, void *context) {
@@ -80,7 +100,7 @@ void init_network(WeatherData *weather_data)
   app_message_register_outbox_sent(appmsg_out_sent);
   app_message_register_outbox_failed(appmsg_out_failed);
   app_message_set_context(weather_data);
-  app_message_open(124, 256);
+  app_message_open(256, 256);
 
   weather_data->error = WEATHER_E_OK;
   weather_data->updated = 0;

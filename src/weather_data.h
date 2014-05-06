@@ -1,6 +1,9 @@
 #ifndef WEATHER_DATA_H
 #define WEATHER_DATA_H
 
+// number of days of weather conditions we are dealing with
+#define NUM_WEATHER_CONDITIONS 5
+
 typedef enum {
   WEATHER_E_OK = 0,
   WEATHER_E_DISCONNECTED,
@@ -13,6 +16,7 @@ typedef struct {
   int intemp;
   int outtemp;
   int condition;
+  int conditions[NUM_WEATHER_CONDITIONS];
   int sunrise;
   int sunset;
   int current_time;

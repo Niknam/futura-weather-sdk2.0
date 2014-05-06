@@ -18,6 +18,12 @@
     "intemp": 6,
     "outtemp": 7,
     "place": 8,
+    "cc": 9,
+    "cc0": 10,
+    "cc1": 11,
+    "cc2": 12,
+    "cc3": 13,
+    "cc4": 14,
     "request_update": 42
   },
   "resources": {

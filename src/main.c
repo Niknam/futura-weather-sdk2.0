@@ -5,13 +5,13 @@
 #include "config.h"
 
 /* Keep a pointer to the current weather data as a global variable */
-static WeatherData *weather_data;
+static WeatherData *weather_data = 0;
 
 /* Global variables to keep track of the UI elements */
-static Window *window;
-static TextLayer *date_layer;
-static TextLayer *time_layer;
-static WeatherLayer *weather_layer;
+static Window *window = 0;
+static TextLayer *date_layer = 0;
+static TextLayer *time_layer = 0;
+static WeatherLayer *weather_layer = 0;
 
 static char date_text[] = "XXX 00";
 static char time_text[] = "00:00";
