@@ -56,7 +56,7 @@ function fetchWeather(latitude, longitude) {
             if(req.status == 200) {
                 console.log(req.responseText);
                 response = JSON.parse(req.responseText);
-                var temperature, icon, city, sunrise, sunset, condition;
+                var temperature, icon, city, sunrise, sunset, condition, ccnow;
                 var current_time = Date.now() / 1000;
                 if (response) 
 				{
@@ -77,11 +77,12 @@ function fetchWeather(latitude, longitude) {
                     outtemp = Math.round(response.gary.temp*10);
 
                     var place = response.gary.place;
+					
+					ccnow = response.gary.ccnow;
 		    
-                    console.log("place:" + place + " in:" + intemp + " Temperature: " + temperature + 
+                    console.log("js place:" + place + " in:" + intemp + " Temperature: " + temperature + 
 							" Condition: " + condition + " Sunrise: " + sunrise + " Sunset: " + sunset + 
-							" ccnow: " + condition + " Sunrise: " + sunrise + " Sunset: " + sunset + 
-							" cc: " + response.gary.ccnow,
+							" ccnow: " + ccnow,
 							" cc0: " + response.gary.cc0,
 							" cc1: " + response.gary.cc1,
 							" cc2: " + response.gary.cc2,
@@ -91,7 +92,7 @@ function fetchWeather(latitude, longitude) {
                               
                     Pebble.sendAppMessage({
                         "condition": condition,
-                        "cc": response.gary.ccnow,
+                        "ccnow": ccnow,
                         "cc0": response.gary.cc0,
                         "cc1": response.gary.cc1,
                         "cc2": response.gary.cc2,

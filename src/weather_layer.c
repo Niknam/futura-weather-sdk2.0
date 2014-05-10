@@ -200,6 +200,7 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
 /*
  * Converts a yahoo weather code to one of our icons.
  * Refer to: https://developer.yahoo.com/weather/
+ * images http://l.yimg.com/a/i/us/we/52/34.gif
  */
  
 uint8_t yahoo_weather_icon_for_condition(int c) 

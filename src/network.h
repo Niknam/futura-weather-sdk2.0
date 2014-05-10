@@ -13,6 +13,12 @@
 #define KEY_INTEMP 6
 #define KEY_OUTTEMP 7
 #define KEY_PLACE 8
+#define KEY_CCNOW 9
+#define KEY_CC0 10
+#define KEY_CC1 11
+#define KEY_CC2 12
+#define KEY_CC3 13
+#define KEY_CC4 14
 #define KEY_REQUEST_UPDATE 42
 
 void init_network(WeatherData *weather_data);

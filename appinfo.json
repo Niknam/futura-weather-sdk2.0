@@ -18,7 +18,7 @@
     "intemp": 6,
     "outtemp": 7,
     "place": 8,
-    "cc": 9,
+    "ccnow": 9,
     "cc0": 10,
     "cc1": 11,
     "cc2": 12,

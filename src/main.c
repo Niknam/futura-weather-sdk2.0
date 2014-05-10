@@ -189,7 +189,8 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 		// Day/night check
 		b_night_time = (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset);
 
-		weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, b_night_time));
+		//weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, b_night_time));
+		weather_layer_set_icon(weather_layer, yahoo_weather_icon_for_condition(weather_data->condition));
     }
   }
 
