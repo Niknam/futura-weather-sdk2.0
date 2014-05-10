@@ -51,13 +51,13 @@ WeatherLayer *weather_layer_create(GRect frame)	// 0, 60, 144, 108
 
   // Add temperature layer
   //wld->temperature_layer = text_layer_create(GRect(70, 6, 72, 80));
-  wld->temperature_layer = text_layer_create(GRect(0, 36, 142, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
+  wld->temperature_layer = text_layer_create(GRect(0, 36-4, 142, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
   text_layer_set_background_color(wld->temperature_layer, GColorClear);
   text_layer_set_text_alignment(wld->temperature_layer, GTextAlignmentCenter);
   text_layer_set_font(wld->temperature_layer, small_font);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temperature_layer));
 
-  wld->update_time_layer = text_layer_create(GRect(60, 54, 144-60, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
+  wld->update_time_layer = text_layer_create(GRect(60, 54-4, 144-60, 80));  // y+h=86, looks like this should be 68? anyway this is a right hand rectangle of the weather area
   text_layer_set_background_color(wld->update_time_layer, GColorClear);
   text_layer_set_text_alignment(wld->update_time_layer, GTextAlignmentRight);
   text_layer_set_font(wld->update_time_layer, small_font);
@@ -65,10 +65,21 @@ WeatherLayer *weather_layer_create(GRect frame)	// 0, 60, 144, 108
 
   // Add bitmap layer
   //wld->icon_layer = bitmap_layer_create(GRect(9, 13, 60, 60));
-  wld->icon_layer = bitmap_layer_create(GRect(9, 3, 30, 30));
-  layer_add_child(weather_layer, bitmap_layer_get_layer(wld->icon_layer));
+	for(int i = 0; i < NUM_WEATHER_CONDITIONS+1; i++)
+	{
+		if(i == 0)
+		{
+			wld->icon_layer[0] = bitmap_layer_create(GRect(9, 3, 30, 30));
+		}
+		else
+		{
+			wld->icon_layer[i] = bitmap_layer_create(GRect(((i-1)*frame.size.w)/(NUM_WEATHER_CONDITIONS), 90, 30, 30));
+		}
+		
+		layer_add_child(weather_layer, bitmap_layer_get_layer(wld->icon_layer[i]));
+		wld->icon[i] = NULL;
+	}
 
-  wld->icon = NULL;
 
   return weather_layer;
 }
@@ -78,14 +89,14 @@ void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
 
   GBitmap *new_icon =  gbitmap_create_with_resource(WEATHER_ICONS[icon]);
   // Display the new bitmap
-  bitmap_layer_set_bitmap(wld->icon_layer, new_icon);
+  bitmap_layer_set_bitmap(wld->icon_layer[0], new_icon);
 
   // Destroy the ex-current icon if it existed
-  if (wld->icon != NULL) {
+  if (wld->icon[0] != NULL) {
     // A cast is needed here to get rid of the const-ness
-    gbitmap_destroy(wld->icon);
+    gbitmap_destroy(wld->icon[0]);
   }
-  wld->icon = new_icon;
+  wld->icon[0] = new_icon;
 }
 
 void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, bool is_stale) 
@@ -164,6 +175,22 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	text_layer_set_text_alignment(wld->update_time_layer, GTextAlignmentRight);
 	text_layer_set_text(wld->update_time_layer, s_update_time);
 
+	for(int i = 1; i < NUM_WEATHER_CONDITIONS+1; i++)
+	{
+		WeatherIcon icon = yahoo_weather_icon_for_condition(w->conditions[i-1]);
+		GBitmap *new_icon =  gbitmap_create_with_resource(WEATHER_ICONS[icon]);
+		
+		// Display the new bitmap
+		bitmap_layer_set_bitmap(wld->icon_layer[i], new_icon);
+
+		// Destroy the ex-current icon if it existed
+		if (wld->icon[i] != NULL) 
+		{
+			gbitmap_destroy(wld->icon[i]);
+		}
+		wld->icon[i] = new_icon;
+	}
+
 	// if there was a change alert the user. If we're in still mode nobody is looking so save the battery instead, unless we are charging.
 	if(changed && ((!w->b_still_mode) || is_charging))
 	{
@@ -184,12 +211,16 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
 
   text_layer_destroy(wld->temperature_layer);
   text_layer_destroy(wld->temperature_layer_background);
-  bitmap_layer_destroy(wld->icon_layer);
 
   // Destroy the previous bitmap if we have one
-  if (wld->icon != NULL) {
-    gbitmap_destroy(wld->icon);
-  }
+	for(int i = 0; i < NUM_WEATHER_CONDITIONS+1; i++)
+	{
+		bitmap_layer_destroy(wld->icon_layer[i]);
+		if (wld->icon[i] != NULL) 
+		{
+			gbitmap_destroy(wld->icon[i]);
+		}
+	}
   layer_destroy(weather_layer);
 
   fonts_unload_custom_font(large_font);

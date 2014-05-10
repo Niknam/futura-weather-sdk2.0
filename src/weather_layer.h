@@ -7,8 +7,8 @@ typedef struct {
 	TextLayer *temperature_layer_background;
 	TextLayer *temperature_layer;
 	TextLayer *update_time_layer;
-	GBitmap *icon;
-	BitmapLayer *icon_layer;
+	GBitmap *icon[NUM_WEATHER_CONDITIONS+1];
+	BitmapLayer *icon_layer[NUM_WEATHER_CONDITIONS+1];
 	char output_str[64];
 	WeatherData last_weather_data;			// the last weather data seen, used to indicate when a change has happened
 	WeatherData trend_weather_data;			// last changed values, so trends can be shown
