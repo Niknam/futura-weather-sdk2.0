@@ -7,10 +7,10 @@
 #define TIME_FRAME      (GRect(0, 2, 144, 168-6))
 #define DATE_FRAME      (GRect(1, 66, 144, 168-62))
 
-/* Keep a pointer to the current weather data as a global variable */
-static WeatherData *weather_data;
+/* Keep a pointer to the current weather data as a static variable */
+static WeatherData weather_data;
 
-/* Global variables to keep track of the UI elements */
+/* Static variables to keep track of the UI elements */
 static Window *window;
 static TextLayer *date_layer;
 static TextLayer *time_layer;
@@ -53,7 +53,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 
   // Update the bottom half of the screen: icon and temperature
   static int animation_step = 0;
-  if (weather_data->updated == 0 && weather_data->error == WEATHER_E_OK)
+  if (weather_data.updated == 0 && weather_data.error == WEATHER_E_OK)
   {
     // 'Animate' loading icon until the first successful weather request
     if (animation_step == 0) {
@@ -69,22 +69,22 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   }
   else {
     // Update the weather icon and temperature
-    if (weather_data->error) {
+    if (weather_data.error) {
       weather_layer_set_icon(weather_layer, WEATHER_ICON_PHONE_ERROR);
     }
     else {
       // Show the temperature as 'stale' if it has not been updated in 30 minutes
       bool stale = false;
-      if (weather_data->updated > time(NULL) + 1800) {
+      if (weather_data.updated > time(NULL) + 1800) {
         stale = true;
       }
-      weather_layer_set_temperature(weather_layer, weather_data->temperature, stale);
+      weather_layer_set_temperature(weather_layer, weather_data.temperature, stale);
 
       // Day/night check
       bool night_time = false;
-      if (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset)
+      if (weather_data.current_time < weather_data.sunrise || weather_data.current_time > weather_data.sunset)
         night_time = true;
-      weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, night_time));
+      weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data.condition, night_time));
     }
   }
 
@@ -100,8 +100,7 @@ static void init(void) {
   window_stack_push(window, true /* Animated */);
   window_set_background_color(window, GColorBlack);
 
-  weather_data = malloc(sizeof(WeatherData));
-  init_network(weather_data);
+  init_network(&weather_data);
 
   font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
   font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
@@ -141,8 +140,6 @@ static void deinit(void) {
 
   fonts_unload_custom_font(font_date);
   fonts_unload_custom_font(font_time);
-
-  free(weather_data);
 }
 
 int main(void) {
