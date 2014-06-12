@@ -8,83 +8,83 @@
 #define DATE_FRAME      (GRect(1, 66, 144, 168-62))
 
 /* Keep a pointer to the current weather data as a static variable */
-static WeatherData weather_data;
+static WeatherData s_weather_data;
 
 /* Static variables to keep track of the UI elements */
-static Window *window;
-static TextLayer *date_layer;
-static TextLayer *time_layer;
-static WeatherLayer *weather_layer;
+static Window *s_window;
+static TextLayer *s_date_layer;
+static TextLayer *s_time_layer;
+static WeatherLayer *s_weather_layer;
 
-static char date_text[] = "XXX 00";
-static char time_text[] = "00:00";
+static char s_date_text[] = "XXX 00";
+static char s_time_text[] = "00:00";
 
 /* Preload the fonts */
-GFont font_date;
-GFont font_time;
+static GFont s_font_date;
+static GFont s_font_time;
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
   if (units_changed & MINUTE_UNIT) {
     // Update the time - Fix to deal with 12 / 24 centering bug
-    time_t currentTime = time(0);
-    struct tm *currentLocalTime = localtime(&currentTime);
+    time_t current_time = time(0);
+    struct tm *current_local_time = localtime(&current_time);
 
     // Manually format the time as 12 / 24 hour, as specified
-    strftime(   time_text, 
-                sizeof(time_text), 
+    strftime(   s_time_text, 
+                sizeof(s_time_text), 
                 clock_is_24h_style() ? "%R" : "%I:%M", 
-                currentLocalTime);
+                current_local_time);
 
     // Drop the first char of time_text if needed
-    if (!clock_is_24h_style() && (time_text[0] == '0')) {
-      memmove(time_text, &time_text[1], sizeof(time_text) - 1);
+    if (!clock_is_24h_style() && (s_time_text[0] == '0')) {
+      memmove(s_time_text, &s_time_text[1], sizeof(s_time_text) - 1);
     }
 
-    text_layer_set_text(time_layer, time_text);
+    text_layer_set_text(s_time_layer, s_time_text);
   }
   if (units_changed & DAY_UNIT) {
     // Update the date - Without a leading 0 on the day of the month
     char day_text[4];
     strftime(day_text, sizeof(day_text), "%a", tick_time);
-    snprintf(date_text, sizeof(date_text), "%s %i", day_text, tick_time->tm_mday);
-    text_layer_set_text(date_layer, date_text);
+    snprintf(s_date_text, sizeof(s_date_text), "%s %i", day_text, tick_time->tm_mday);
+    text_layer_set_text(s_date_layer, s_date_text);
   }
 
   // Update the bottom half of the screen: icon and temperature
-  static int animation_step = 0;
-  if (weather_data.updated == 0 && weather_data.error == WEATHER_E_OK)
+  static int s_animation_step = 0;
+  if (s_weather_data.updated == 0 && s_weather_data.error == WEATHER_E_OK)
   {
     // 'Animate' loading icon until the first successful weather request
-    if (animation_step == 0) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_LOADING1);
+    if (s_animation_step == 0) {
+      weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING1);
     }
-    else if (animation_step == 1) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_LOADING2);
+    else if (s_animation_step == 1) {
+      weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING2);
     }
-    else if (animation_step >= 2) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_LOADING3);
+    else if (s_animation_step >= 2) {
+      weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING3);
     }
-    animation_step = (animation_step + 1) % 3;
+    s_animation_step = (s_animation_step + 1) % 3;
   }
   else {
     // Update the weather icon and temperature
-    if (weather_data.error) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_PHONE_ERROR);
+    if (s_weather_data.error) {
+      weather_layer_set_icon(s_weather_layer, WEATHER_ICON_PHONE_ERROR);
     }
     else {
       // Show the temperature as 'stale' if it has not been updated in 30 minutes
       bool stale = false;
-      if (weather_data.updated > time(NULL) + 1800) {
+      if (s_weather_data.updated > time(NULL) + 1800) {
         stale = true;
       }
-      weather_layer_set_temperature(weather_layer, weather_data.temperature, stale);
+      weather_layer_set_temperature(s_weather_layer, s_weather_data.temperature, stale);
 
       // Day/night check
       bool night_time = false;
-      if (weather_data.current_time < weather_data.sunrise || weather_data.current_time > weather_data.sunset)
+      if (s_weather_data.current_time < s_weather_data.sunrise || s_weather_data.current_time > s_weather_data.sunset)
         night_time = true;
-      weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data.condition, night_time));
+      weather_layer_set_icon(s_weather_layer, weather_icon_for_condition(s_weather_data.condition, night_time));
     }
   }
 
@@ -96,32 +96,32 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 }
 
 static void init(void) {
-  window = window_create();
-  window_stack_push(window, true /* Animated */);
-  window_set_background_color(window, GColorBlack);
+  s_window = window_create();
+  window_stack_push(s_window, true /* Animated */);
+  window_set_background_color(s_window, GColorBlack);
 
-  init_network(&weather_data);
+  init_network(&s_weather_data);
 
-  font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
-  font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
+  s_font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
+  s_font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
 
-  time_layer = text_layer_create(TIME_FRAME);
-  text_layer_set_text_color(time_layer, GColorWhite);
-  text_layer_set_background_color(time_layer, GColorClear);
-  text_layer_set_font(time_layer, font_time);
-  text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(time_layer));
+  s_time_layer = text_layer_create(TIME_FRAME);
+  text_layer_set_text_color(s_time_layer, GColorWhite);
+  text_layer_set_background_color(s_time_layer, GColorClear);
+  text_layer_set_font(s_time_layer, s_font_time);
+  text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(s_window), text_layer_get_layer(s_time_layer));
 
-  date_layer = text_layer_create(DATE_FRAME);
-  text_layer_set_text_color(date_layer, GColorWhite);
-  text_layer_set_background_color(date_layer, GColorClear);
-  text_layer_set_font(date_layer, font_date);
-  text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(date_layer));
+  s_date_layer = text_layer_create(DATE_FRAME);
+  text_layer_set_text_color(s_date_layer, GColorWhite);
+  text_layer_set_background_color(s_date_layer, GColorClear);
+  text_layer_set_font(s_date_layer, s_font_date);
+  text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(s_window), text_layer_get_layer(s_date_layer));
 
   // Add weather layer
-  weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
-  layer_add_child(window_get_root_layer(window), weather_layer);
+  s_weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
+  layer_add_child(window_get_root_layer(s_window), s_weather_layer);
 
   // Update the screen right away
   time_t now = time(NULL);
@@ -131,15 +131,15 @@ static void init(void) {
 }
 
 static void deinit(void) {
-  window_destroy(window);
+  window_destroy(s_window);
   tick_timer_service_unsubscribe();
 
-  text_layer_destroy(time_layer);
-  text_layer_destroy(date_layer);
-  weather_layer_destroy(weather_layer);
+  text_layer_destroy(s_time_layer);
+  text_layer_destroy(s_date_layer);
+  weather_layer_destroy(s_weather_layer);
 
-  fonts_unload_custom_font(font_date);
-  fonts_unload_custom_font(font_time);
+  fonts_unload_custom_font(s_font_date);
+  fonts_unload_custom_font(s_font_time);
 }
 
 int main(void) {
