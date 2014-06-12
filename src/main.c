@@ -26,19 +26,11 @@ static GFont s_font_time;
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
   if (units_changed & MINUTE_UNIT) {
-    // Update the time - Fix to deal with 12 / 24 centering bug
-    time_t current_time = time(0);
-    struct tm *current_local_time = localtime(&current_time);
-
-    // Manually format the time as 12 / 24 hour, as specified
-    strftime(   s_time_text, 
-                sizeof(s_time_text), 
-                clock_is_24h_style() ? "%R" : "%I:%M", 
-                current_local_time);
-
-    // Drop the first char of time_text if needed
-    if (!clock_is_24h_style() && (s_time_text[0] == '0')) {
-      memmove(s_time_text, &s_time_text[1], sizeof(s_time_text) - 1);
+    clock_copy_time_string(s_time_text, sizeof(s_time_text));
+    // Despite Matt's assurances otherwise, the above will actually attempt to include
+    // an AM/PM string even if it will not fit. Truncate a trailing space if necessary.
+    if (s_time_text[4] == ' ') {
+      s_time_text[4] = '\0';
     }
 
     text_layer_set_text(s_time_layer, s_time_text);
