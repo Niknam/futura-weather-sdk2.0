@@ -89,25 +89,25 @@ void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
   wld->current_icon = icon;
 }
 
-void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool is_stale) {
+void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
+  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i", t);
 
   // Temperature between -9° -> 9° or 20° -> 99°
   if ((t >= -9 && t <= 9) || (t >= 20 && t < 100)) {
     text_layer_set_font(wld->temp_layer, s_large_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
 
-	// Is the temperature below zero?
-	if (wld->temp_str[0] == '-') {
-	  memmove(
-          wld->temp_str + 1 + 1,
-          wld->temp_str + 1,
-          5 - (1 + 1)
-      );
-	  memcpy(&wld->temp_str[1], " ", 1);
-	}
+  	// Is the temperature below zero?
+  	if (wld->temp_str[0] == '-') {
+  	  memmove(
+            wld->temp_str + 1 + 1,
+            wld->temp_str + 1,
+            5 - (1 + 1)
+        );
+  	  memcpy(&wld->temp_str[1], " ", 1);
+  	}
   }
   // Temperature between 10° -> 19°
   else if (t >= 10 && t < 20) {
@@ -120,6 +120,12 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool 
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   }
   text_layer_set_text(wld->temp_layer, wld->temp_str);
+}
+
+void weather_layer_mark_stale(WeatherLayer* weather_layer) {
+  WeatherLayerData *wld = layer_get_data(weather_layer);
+
+  // Don't do anything here for now.
 }
 
 void weather_layer_destroy(WeatherLayer* weather_layer) {

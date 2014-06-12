@@ -1,10 +1,13 @@
 #include <pebble.h>
 #include "network.h"
 
+static WeatherUpdateHandler s_weather_update_handler = NULL;
+static WeatherErrorHandler s_weather_error_handler = NULL;
+
 static void appmsg_in_received(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In received.");
 
-  WeatherData *weather = (WeatherData*) context;
+  WeatherData weather;
 
   Tuple *temperature_tuple = dict_find(received, KEY_TEMPERATURE);
   Tuple *condition_tuple = dict_find(received, KEY_CONDITION);
@@ -14,23 +17,30 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
   Tuple *error_tuple = dict_find(received, KEY_ERROR);
 
   if (temperature_tuple && condition_tuple) {
-    weather->temperature = temperature_tuple->value->int32;
-    weather->condition = condition_tuple->value->int32;
-    weather->sunrise = sunrise_tuple->value->int32;
-    weather->sunset = sunset_tuple->value->int32;
-    weather->current_time = current_time_tuple->value->int32;
-    weather->error = WEATHER_E_OK;
-    weather->updated = time(NULL);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Got temperature %i and condition %i", weather->temperature, weather->condition);
+    weather.temperature = temperature_tuple->value->int32;
+    weather.condition = condition_tuple->value->int32;
+    weather.sunrise = sunrise_tuple->value->int32;
+    weather.sunset = sunset_tuple->value->int32;
+    weather.current_time = current_time_tuple->value->int32;
+    weather.updated = time(NULL);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Got temperature %i and condition %i", weather.temperature, weather.condition);
+
+    if(s_weather_update_handler) {
+      s_weather_update_handler(&weather);
+    }
   }
   else if (error_tuple) {
-    weather->error = WEATHER_E_NETWORK;
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got error %s", error_tuple->value->cstring);
+    if(s_weather_error_handler) {
+      s_weather_error_handler(WEATHER_E_NETWORK);
+    }
   }
   else {
-    weather->error = WEATHER_E_PHONE;
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got message with unknown keys... temperature=%p condition=%p error=%p",
       temperature_tuple, condition_tuple, error_tuple);
+    if(s_weather_error_handler) {
+      s_weather_error_handler(WEATHER_E_PHONE);
+    }
   }
 }
 
@@ -45,39 +55,38 @@ static void appmsg_out_sent(DictionaryIterator *sent, void *context) {
 }
 
 static void appmsg_out_failed(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-  WeatherData *weather = (WeatherData*) context;
-
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Out failed: %i", reason);
+
+  WeatherError error;
 
   switch (reason) {
     case APP_MSG_NOT_CONNECTED:
-      weather->error = WEATHER_E_DISCONNECTED;
+      error = WEATHER_E_DISCONNECTED;
       request_weather();
       break;
     case APP_MSG_SEND_REJECTED:
     case APP_MSG_SEND_TIMEOUT:
-      weather->error = WEATHER_E_PHONE;
+      error = WEATHER_E_PHONE;
       request_weather();
       break;
     default:
-      weather->error = WEATHER_E_PHONE;
+      error = WEATHER_E_PHONE;
       request_weather();
       break;
   }
+
+  if(s_weather_error_handler) {
+    s_weather_error_handler(error);
+  }
 }
 
-void init_network(WeatherData *weather_data)
+void init_network(void)
 {
   app_message_register_inbox_received(appmsg_in_received);
   app_message_register_inbox_dropped(appmsg_in_dropped);
   app_message_register_outbox_sent(appmsg_out_sent);
   app_message_register_outbox_failed(appmsg_out_failed);
-  app_message_set_context(weather_data);
   app_message_open(124, 256);
-
-  weather_data->error = WEATHER_E_OK;
-  weather_data->updated = 0;
-
 }
 
 void close_network(void)
@@ -93,4 +102,12 @@ void request_weather(void)
   dict_write_uint8(iter, KEY_REQUEST_UPDATE, 42);
 
   app_message_outbox_send();
+}
+
+void set_weather_update_handler(WeatherUpdateHandler handler) {
+  s_weather_update_handler = handler;
+}
+
+void set_weather_error_handler(WeatherErrorHandler handler) {
+  s_weather_error_handler = handler;
 }
