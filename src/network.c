@@ -80,12 +80,12 @@ void init_network(WeatherData *weather_data)
 
 }
 
-void close_network()
+void close_network(void)
 {
   app_message_deregister_callbacks();
 }
 
-void request_weather()
+void request_weather(void)
 {
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);

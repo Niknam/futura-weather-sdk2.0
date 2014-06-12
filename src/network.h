@@ -25,6 +25,6 @@ typedef struct {
 } WeatherData;
 
 void init_network(WeatherData *weather_data);
-void close_network();
+void close_network(void);
 
-void request_weather();
+void request_weather(void);
