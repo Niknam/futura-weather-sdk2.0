@@ -1,14 +1,6 @@
 #ifndef WEATHER_LAYER_H
 #define WEATHER_LAYER_H
 
-typedef struct {
-	TextLayer *temp_layer_background;
-	TextLayer *temp_layer;
-	GBitmap *icon;
-	BitmapLayer *icon_layer;
-	char temp_str[6];
-} WeatherLayerData;
-
 typedef enum {
 	WEATHER_ICON_CLEAR_DAY = 0,
 	WEATHER_ICON_CLEAR_NIGHT,

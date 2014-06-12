@@ -27,6 +27,15 @@ static uint8_t WEATHER_ICONS[] = {
   RESOURCE_ID_ICON_LOADING3,
 };
 
+typedef struct {
+  TextLayer *temp_layer_background;
+  TextLayer *temp_layer;
+  GBitmap *icon;
+  BitmapLayer *icon_layer;
+  char temp_str[6];
+  WeatherIcon current_icon;
+} WeatherLayerData;
+
 // Keep pointers to the two fonts we use.
 static GFont large_font, small_font;
 
@@ -63,16 +72,21 @@ WeatherLayer *weather_layer_create(GRect frame)
 void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
+  // Let's not waste power doing nothing of value.
+  if(wld->current_icon == icon) {
+    return;
+  }
+
   GBitmap *new_icon =  gbitmap_create_with_resource(WEATHER_ICONS[icon]);
   // Display the new bitmap
   bitmap_layer_set_bitmap(wld->icon_layer, new_icon);
 
   // Destroy the ex-current icon if it existed
   if (wld->icon != NULL) {
-    // A cast is needed here to get rid of the const-ness
     gbitmap_destroy(wld->icon);
   }
   wld->icon = new_icon;
+  wld->current_icon = icon;
 }
 
 void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool is_stale) {
@@ -115,7 +129,7 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
   text_layer_destroy(wld->temp_layer_background);
   bitmap_layer_destroy(wld->icon_layer);
 
-  // Destroy the previous bitmap if we have one
+  // Destroy the bitmap if we have one
   if (wld->icon != NULL) {
     gbitmap_destroy(wld->icon);
   }
