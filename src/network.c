@@ -3,6 +3,14 @@
 
 static WeatherUpdateHandler s_weather_update_handler = NULL;
 static WeatherErrorHandler s_weather_error_handler = NULL;
+static bool s_is_connected = false; // because of BLE confusion.
+
+
+static void report_error(WeatherError error) {
+  if(s_weather_error_handler) {
+    s_weather_error_handler(error);
+  }
+}
 
 static void appmsg_in_received(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In received.");
@@ -38,20 +46,18 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
   else {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got message with unknown keys... temperature=%p condition=%p error=%p",
       temperature_tuple, condition_tuple, error_tuple);
-    if(s_weather_error_handler) {
-      s_weather_error_handler(WEATHER_E_PHONE);
-    }
+    report_error(WEATHER_E_PHONE);
   }
+}
+
+static void appmsg_out_sent(DictionaryIterator *sent, void *context) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Out sent.");
 }
 
 static void appmsg_in_dropped(AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In dropped: %i", reason);
   // Request a new update...
   request_weather();
-}
-
-static void appmsg_out_sent(DictionaryIterator *sent, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Out sent.");
 }
 
 static void appmsg_out_failed(DictionaryIterator *failed, AppMessageResult reason, void *context) {
@@ -73,8 +79,19 @@ static void appmsg_out_failed(DictionaryIterator *failed, AppMessageResult reaso
       break;
   }
 
-  if(s_weather_error_handler) {
-    s_weather_error_handler(error);
+  report_error(error);
+}
+
+static void bluetooth_connection_service_handler(bool connected) {
+  if(connected == s_is_connected) {
+    return;
+  }
+  s_is_connected = connected;
+
+  if(connected) {
+    request_weather();
+  } else {
+    report_error(WEATHER_E_DISCONNECTED);
   }
 }
 
@@ -84,12 +101,16 @@ void init_network(void)
   app_message_register_inbox_dropped(appmsg_in_dropped);
   app_message_register_outbox_sent(appmsg_out_sent);
   app_message_register_outbox_failed(appmsg_out_failed);
+  bluetooth_connection_service_subscribe(bluetooth_connection_service_handler);
   app_message_open(124, 256);
+
+  s_is_connected = bluetooth_connection_service_peek();
 }
 
 void close_network(void)
 {
   app_message_deregister_callbacks();
+  bluetooth_connection_service_unsubscribe();
 }
 
 void request_weather(void)
