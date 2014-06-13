@@ -68,8 +68,16 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   }
 
   // Refresh the weather info every 15 minutes
-  if (units_changed & MINUTE_UNIT && (tick_time->tm_min % 15) == 0) {
+  if ((units_changed & MINUTE_UNIT) && (tick_time->tm_min % 15 == 0)) {
     request_weather();
+  }
+}
+
+static void mark_weather_loaded(void) {
+  if(!s_weather_loaded) {
+    s_weather_loaded = true;
+    // We don't need to run this every second any more.
+    tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
   }
 }
 
@@ -79,12 +87,15 @@ static void handle_weather_update(WeatherData* weather) {
 
   const bool is_night = (weather->current_time < weather->sunrise || weather->current_time > weather->sunset);
   weather_layer_set_icon(s_weather_layer, weather_icon_for_condition(weather->condition, is_night));
-  
-  if(!s_weather_loaded) {
-    s_weather_loaded = true;
-    // We don't need to run this every second any more.
-    tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
-  }
+
+  mark_weather_loaded();
+}
+
+static void handle_weather_error(WeatherError error) {
+  // We apparently don't actually care what the error was at all.
+  weather_layer_set_icon(s_weather_layer, WEATHER_ICON_PHONE_ERROR);
+
+  mark_weather_loaded();
 }
 
 static void init(void) {
@@ -94,6 +105,7 @@ static void init(void) {
 
   init_network();
   set_weather_update_handler(handle_weather_update);
+  set_weather_error_handler(handle_weather_error);
 
   s_font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
   s_font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
@@ -121,6 +133,9 @@ static void init(void) {
   handle_tick(localtime(&now), SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT );
   // And then every second
   tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+
+  // Get the weather.
+  request_weather();
 }
 
 static void deinit(void) {

@@ -59,19 +59,17 @@ static void appmsg_out_failed(DictionaryIterator *failed, AppMessageResult reaso
 
   WeatherError error;
 
+  // It's not clear that there's actually any value in retry logic here.
+  // Most of these are not transient failures.
+
   switch (reason) {
     case APP_MSG_NOT_CONNECTED:
       error = WEATHER_E_DISCONNECTED;
-      request_weather();
       break;
     case APP_MSG_SEND_REJECTED:
     case APP_MSG_SEND_TIMEOUT:
-      error = WEATHER_E_PHONE;
-      request_weather();
-      break;
     default:
       error = WEATHER_E_PHONE;
-      request_weather();
       break;
   }
 
