@@ -144,8 +144,13 @@ static void init(void) {
 
   // We don't trigger the weather from here, because it is possible for the other end
   // to not yet be running when we finish startup. However, we do set a timeout so we
-  // don't sit around animating forever.
-  s_loading_timeout = app_timer_register(LOADING_TIMEOUT, handle_loading_timeout, NULL);
+  // don't sit around animating forever. However, if Bluetooth is not connected, then
+  // this cannot possibly succeed and we fail instantly.
+  if(bluetooth_connection_service_peek()) {
+    s_loading_timeout = app_timer_register(LOADING_TIMEOUT, handle_loading_timeout, NULL);
+  } else {
+    handle_weather_error(WEATHER_E_DISCONNECTED);
+  }
 }
 
 static void deinit(void) {
