@@ -122,12 +122,6 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t) {
   text_layer_set_text(wld->temp_layer, wld->temp_str);
 }
 
-void weather_layer_mark_stale(WeatherLayer* weather_layer) {
-  WeatherLayerData *wld = layer_get_data(weather_layer);
-
-  // Don't do anything here for now.
-}
-
 void weather_layer_destroy(WeatherLayer* weather_layer) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 

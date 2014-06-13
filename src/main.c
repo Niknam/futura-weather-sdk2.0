@@ -17,7 +17,6 @@ static WeatherLayer *s_weather_layer;
 static char s_date_text[] = "XXX 00";
 static char s_time_text[] = "00:00";
 
-static time_t s_last_weather_update = 0;
 static bool s_weather_loaded = false;
 
 static AppTimer *s_loading_timeout = NULL;
@@ -62,13 +61,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   }
 
   // Run the animation if we haven't loaded the weather yet.
-  if (s_weather_loaded) {
-    // Show the temperature as 'stale' if it has not been updated in 30 minutes
-    bool stale = (s_last_weather_update > time(NULL) + 1800);
-    if (stale) {
-      weather_layer_mark_stale(s_weather_layer);
-    }
-  } else {
+  if (!s_weather_loaded) {
     step_loading_animation();
   }
 
@@ -91,7 +84,6 @@ static void mark_weather_loaded(void) {
 }
 
 static void handle_weather_update(WeatherData* weather) {
-  s_last_weather_update = time(NULL);
   weather_layer_set_temperature(s_weather_layer, weather->temperature);
 
   const bool is_night = (weather->current_time < weather->sunrise || weather->current_time > weather->sunset);
