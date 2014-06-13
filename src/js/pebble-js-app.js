@@ -1,5 +1,6 @@
 Pebble.addEventListener("ready", function(e) {
     console.log("Starting ...");
+    updateWeather();
 });
 
 Pebble.addEventListener("appmessage", function(e) {

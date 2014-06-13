@@ -6,6 +6,7 @@
 
 #define TIME_FRAME      (GRect(0, 2, 144, 168-6))
 #define DATE_FRAME      (GRect(1, 66, 144, 168-62))
+#define LOADING_TIMEOUT 30000
 
 /* Static variables to keep track of the UI elements */
 static Window *s_window;
@@ -18,6 +19,8 @@ static char s_time_text[] = "00:00";
 
 static time_t s_last_weather_update = 0;
 static bool s_weather_loaded = false;
+
+static AppTimer *s_loading_timeout = NULL;
 
 /* Preload the fonts */
 static GFont s_font_date;
@@ -79,6 +82,10 @@ static void mark_weather_loaded(void) {
     // We don't need to run this every second any more.
     tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
   }
+  if(s_loading_timeout != NULL) {
+    app_timer_cancel(s_loading_timeout);
+    s_loading_timeout = NULL;
+  }
 }
 
 static void handle_weather_update(WeatherData* weather) {
@@ -96,6 +103,13 @@ static void handle_weather_error(WeatherError error) {
   weather_layer_set_icon(s_weather_layer, WEATHER_ICON_PHONE_ERROR);
 
   mark_weather_loaded();
+}
+
+static void handle_loading_timeout(void* unused) {
+  s_loading_timeout = NULL;
+  if(!s_weather_loaded) {
+    handle_weather_error(WEATHER_E_PHONE);
+  }
 }
 
 static void init(void) {
@@ -134,8 +148,10 @@ static void init(void) {
   // And then every second
   tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
 
-  // Get the weather.
-  request_weather();
+  // We don't trigger the weather from here, because it is possible for the other end
+  // to not yet be running when we finish startup. However, we do set a timeout so we
+  // don't sit around animating forever.
+  s_loading_timeout = app_timer_register(LOADING_TIMEOUT, handle_loading_timeout, NULL);
 }
 
 static void deinit(void) {
