@@ -28,11 +28,10 @@ static GFont s_font_time;
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick handler.");
   if (units_changed & MINUTE_UNIT) {
     clock_copy_time_string(s_time_text, sizeof(s_time_text));
-    // Despite Matt's assurances otherwise, the above will actually attempt to include
-    // an AM/PM string even if it will not fit. Truncate a trailing space if necessary.
+    // clock_copy_time_string may including a trailing space as it tries to fit in
+    // the AM/PM in 24-hour time; truncate it if so.
     if (s_time_text[4] == ' ') {
       s_time_text[4] = '\0';
     }

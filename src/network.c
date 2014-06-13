@@ -36,14 +36,12 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
     if(s_weather_update_handler) {
       s_weather_update_handler(&weather);
     }
-  }
-  else if (error_tuple) {
+  } else if (error_tuple) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got error %s", error_tuple->value->cstring);
     if(s_weather_error_handler) {
       s_weather_error_handler(WEATHER_E_NETWORK);
     }
-  }
-  else {
+  } else {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got message with unknown keys... temperature=%p condition=%p error=%p",
       temperature_tuple, condition_tuple, error_tuple);
     report_error(WEATHER_E_PHONE);
@@ -95,8 +93,7 @@ static void bluetooth_connection_service_handler(bool connected) {
   }
 }
 
-void init_network(void)
-{
+void init_network(void) {
   app_message_register_inbox_received(appmsg_in_received);
   app_message_register_inbox_dropped(appmsg_in_dropped);
   app_message_register_outbox_sent(appmsg_out_sent);
@@ -107,14 +104,12 @@ void init_network(void)
   s_is_connected = bluetooth_connection_service_peek();
 }
 
-void close_network(void)
-{
+void close_network(void) {
   app_message_deregister_callbacks();
   bluetooth_connection_service_unsubscribe();
 }
 
-void request_weather(void)
-{
+void request_weather(void) {
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
 
