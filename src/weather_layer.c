@@ -92,7 +92,7 @@ void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
 void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i", t);
+  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i°", t);
 
   // Temperature between -9° -> 9° or 20° -> 99°
   if ((t >= -9 && t <= 9) || (t >= 20 && t < 100)) {
