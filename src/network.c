@@ -24,7 +24,7 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
   Tuple *current_time_tuple = dict_find(received, KEY_CURRENT_TIME);
   Tuple *error_tuple = dict_find(received, KEY_ERROR);
 
-  if (temperature_tuple && condition_tuple) {
+  if (temperature_tuple && condition_tuple && sunset_tuple && sunset_tuple && current_time_tuple) {
     weather.temperature = temperature_tuple->value->int32;
     weather.condition = condition_tuple->value->int32;
     weather.sunrise = sunrise_tuple->value->int32;
