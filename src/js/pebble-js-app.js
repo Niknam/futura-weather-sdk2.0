@@ -54,7 +54,7 @@ function fetchWeather(latitude, longitude) {
                     else {
                         // Otherwise, convert temperature to Celsius
                         temperature = Math.round(tempResult - 273.15);
-                    }		 
+                    }
                     condition = response.weather[0].id;
                     sunrise = response.sys.sunrise;
                     sunset = response.sys.sunset;

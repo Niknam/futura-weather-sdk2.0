@@ -99,15 +99,15 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t) {
     text_layer_set_font(wld->temp_layer, s_large_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
 
-  	// Is the temperature below zero?
-  	if (wld->temp_str[0] == '-') {
-  	  memmove(
-            wld->temp_str + 1 + 1,
-            wld->temp_str + 1,
-            5 - (1 + 1)
-        );
-  	  memcpy(&wld->temp_str[1], " ", 1);
-  	}
+    // Is the temperature below zero?
+    if (wld->temp_str[0] == '-') {
+      memmove(
+        wld->temp_str + 1 + 1,
+        wld->temp_str + 1,
+        5 - (1 + 1)
+      );
+      memcpy(&wld->temp_str[1], " ", 1);
+    }
   }
   // Temperature between 10° -> 19°
   else if (t >= 10 && t < 20) {

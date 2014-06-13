@@ -11,9 +11,9 @@
   "appKeys": {
     "temperature": 0,
     "condition": 1,
-	"sunrise": 2,
-	"sunset": 3,
-	"current_time": 4,
+    "sunrise": 2,
+    "sunset": 3,
+    "current_time": 4,
     "error": 5,
     "request_update": 42
   },

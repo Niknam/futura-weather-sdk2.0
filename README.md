@@ -7,10 +7,10 @@ To do:
  - Add error handling features as in the [SDK 1.x versions](https://github.com/Niknam/futura-weather)
  - Switch weather information provider from OpenWeatherMap back to Yahoo! Weather
  - Add configuration settings
-	- Temperature format
-	- Fixed location
-	- Language
-	- Phone link monitor control
+  - Temperature format
+  - Fixed location
+  - Language
+  - Phone link monitor control
 
 Based on work by:
  - "WeatherWatch" by Katharine - https://github.com/Katharine/WeatherWatch

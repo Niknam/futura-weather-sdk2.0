@@ -72,12 +72,12 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 }
 
 static void mark_weather_loaded(void) {
-  if(!s_weather_loaded) {
+  if (!s_weather_loaded) {
     s_weather_loaded = true;
     // We don't need to run this every second any more.
     tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
   }
-  if(s_loading_timeout != NULL) {
+  if (s_loading_timeout != NULL) {
     app_timer_cancel(s_loading_timeout);
     s_loading_timeout = NULL;
   }
@@ -101,7 +101,7 @@ static void handle_weather_error(WeatherError error) {
 
 static void handle_loading_timeout(void* unused) {
   s_loading_timeout = NULL;
-  if(!s_weather_loaded) {
+  if (!s_weather_loaded) {
     handle_weather_error(WEATHER_E_PHONE);
   }
 }
