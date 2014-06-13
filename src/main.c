@@ -2,7 +2,6 @@
 
 #include "weather_layer.h"
 #include "network.h"
-#include "config.h"
 
 #define TIME_FRAME      (GRect(0, 2, 144, 168-6))
 #define DATE_FRAME      (GRect(1, 66, 144, 168-62))
