@@ -26,6 +26,21 @@ static AppTimer *s_loading_timeout = NULL;
 static GFont s_font_date;
 static GFont s_font_time;
 
+static void step_loading_animation() {
+  static int s_animation_step = 0;
+  // 'Animate' loading icon until the first successful weather request
+  if (s_animation_step == 0) {
+    weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING1);
+  }
+  else if (s_animation_step == 1) {
+    weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING2);
+  }
+  else if (s_animation_step >= 2) {
+    weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING3);
+  }
+  s_animation_step = (s_animation_step + 1) % 3;
+}
+
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
   if (units_changed & MINUTE_UNIT) {
@@ -47,26 +62,14 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
   }
 
   // Run the animation if we haven't loaded the weather yet.
-  static int s_animation_step = 0;
-  if (!s_weather_loaded)
-  {
-    // 'Animate' loading icon until the first successful weather request
-    if (s_animation_step == 0) {
-      weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING1);
-    }
-    else if (s_animation_step == 1) {
-      weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING2);
-    }
-    else if (s_animation_step >= 2) {
-      weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING3);
-    }
-    s_animation_step = (s_animation_step + 1) % 3;
-  } else {
+  if (s_weather_loaded) {
     // Show the temperature as 'stale' if it has not been updated in 30 minutes
     bool stale = (s_last_weather_update > time(NULL) + 1800);
     if (stale) {
       weather_layer_mark_stale(s_weather_layer);
     }
+  } else {
+    step_loading_animation();
   }
 
   // Refresh the weather info every 15 minutes
