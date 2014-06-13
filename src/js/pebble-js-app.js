@@ -40,7 +40,7 @@ function fetchWeather(latitude, longitude) {
         "lat=" + latitude + "&lon=" + longitude + "&cnt=1", true);
     req.onload = function(e) {
         if (req.readyState == 4) {
-            if(req.status == 200) {
+            if (req.status == 200) {
                 console.log(req.responseText);
                 response = JSON.parse(req.responseText);
                 var temperature, icon, city, sunrise, sunset, condition;

@@ -7,7 +7,7 @@ static bool s_is_connected = false; // because of BLE confusion.
 
 
 static void report_error(WeatherError error) {
-  if(s_weather_error_handler) {
+  if (s_weather_error_handler) {
     s_weather_error_handler(error);
   }
 }
@@ -33,12 +33,12 @@ static void appmsg_in_received(DictionaryIterator *received, void *context) {
     weather.updated = time(NULL);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got temperature %i and condition %i", weather.temperature, weather.condition);
 
-    if(s_weather_update_handler) {
+    if (s_weather_update_handler) {
       s_weather_update_handler(&weather);
     }
   } else if (error_tuple) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Got error %s", error_tuple->value->cstring);
-    if(s_weather_error_handler) {
+    if (s_weather_error_handler) {
       s_weather_error_handler(WEATHER_E_NETWORK);
     }
   } else {
@@ -81,12 +81,12 @@ static void appmsg_out_failed(DictionaryIterator *failed, AppMessageResult reaso
 }
 
 static void bluetooth_connection_service_handler(bool connected) {
-  if(connected == s_is_connected) {
+  if (connected == s_is_connected) {
     return;
   }
   s_is_connected = connected;
 
-  if(connected) {
+  if (connected) {
     request_weather();
   } else {
     report_error(WEATHER_E_DISCONNECTED);

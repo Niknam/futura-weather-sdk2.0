@@ -73,7 +73,7 @@ void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
   // Let's not waste power doing nothing of value.
-  if(wld->current_icon == icon) {
+  if (wld->current_icon == icon) {
     return;
   }
 
