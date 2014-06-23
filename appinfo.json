@@ -3,7 +3,7 @@
   "shortName": "Futura Weather",
   "longName": "Futura Weather",
   "companyName": "Pebble Community",
-  "versionCode": 8,
+  "versionCode": 9,
   "versionLabel": "2.1.0",
   "watchapp": {
     "watchface": true
