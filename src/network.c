@@ -54,8 +54,8 @@ static void appmsg_out_sent(DictionaryIterator *sent, void *context) {
 
 static void appmsg_in_dropped(AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In dropped: %i", reason);
-  // Request a new update...
-  request_weather();
+  // Err on the side of caution here because infinite loops are bad.
+  report_error(WEATHER_E_PHONE);
 }
 
 static void appmsg_out_failed(DictionaryIterator *failed, AppMessageResult reason, void *context) {
