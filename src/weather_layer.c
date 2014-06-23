@@ -27,8 +27,17 @@ static uint8_t WEATHER_ICONS[] = {
   RESOURCE_ID_ICON_LOADING3,
 };
 
+typedef struct {
+  TextLayer *temp_layer_background;
+  TextLayer *temp_layer;
+  GBitmap *icon;
+  BitmapLayer *icon_layer;
+  char temp_str[6];
+  WeatherIcon current_icon;
+} WeatherLayerData;
+
 // Keep pointers to the two fonts we use.
-static GFont large_font, small_font;
+static GFont s_large_font, s_small_font;
 
 WeatherLayer *weather_layer_create(GRect frame)
 {
@@ -36,8 +45,8 @@ WeatherLayer *weather_layer_create(GRect frame)
   WeatherLayer *weather_layer = layer_create_with_data(frame, sizeof(WeatherLayerData));
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  large_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40));
-  small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35));
+  s_large_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_40));
+  s_small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_35));
 
   // Add background layer
   wld->temp_layer_background = text_layer_create(GRect(0, 10, 144, 68));
@@ -48,7 +57,7 @@ WeatherLayer *weather_layer_create(GRect frame)
   wld->temp_layer = text_layer_create(GRect(70, 19, 72, 80));
   text_layer_set_background_color(wld->temp_layer, GColorClear);
   text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
-  text_layer_set_font(wld->temp_layer, large_font);
+  text_layer_set_font(wld->temp_layer, s_large_font);
   layer_add_child(weather_layer, text_layer_get_layer(wld->temp_layer));
 
   // Add bitmap layer
@@ -63,46 +72,51 @@ WeatherLayer *weather_layer_create(GRect frame)
 void weather_layer_set_icon(WeatherLayer* weather_layer, WeatherIcon icon) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
+  // Let's not waste power doing nothing of value.
+  if (wld->current_icon == icon) {
+    return;
+  }
+
   GBitmap *new_icon =  gbitmap_create_with_resource(WEATHER_ICONS[icon]);
   // Display the new bitmap
   bitmap_layer_set_bitmap(wld->icon_layer, new_icon);
 
   // Destroy the ex-current icon if it existed
   if (wld->icon != NULL) {
-    // A cast is needed here to get rid of the const-ness
     gbitmap_destroy(wld->icon);
   }
   wld->icon = new_icon;
+  wld->current_icon = icon;
 }
 
-void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t, bool is_stale) {
+void weather_layer_set_temperature(WeatherLayer* weather_layer, int16_t t) {
   WeatherLayerData *wld = layer_get_data(weather_layer);
 
-  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i%s", t, is_stale ? " " : "°");
+  snprintf(wld->temp_str, sizeof(wld->temp_str), "%i°", t);
 
   // Temperature between -9° -> 9° or 20° -> 99°
   if ((t >= -9 && t <= 9) || (t >= 20 && t < 100)) {
-    text_layer_set_font(wld->temp_layer, large_font);
+    text_layer_set_font(wld->temp_layer, s_large_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
 
-	// Is the temperature below zero?
-	if (wld->temp_str[0] == '-') {
-	  memmove(
-          wld->temp_str + 1 + 1,
-          wld->temp_str + 1,
-          5 - (1 + 1)
+    // Is the temperature below zero?
+    if (wld->temp_str[0] == '-') {
+      memmove(
+        wld->temp_str + 1 + 1,
+        wld->temp_str + 1,
+        5 - (1 + 1)
       );
-	  memcpy(&wld->temp_str[1], " ", 1);
-	}
+      memcpy(&wld->temp_str[1], " ", 1);
+    }
   }
   // Temperature between 10° -> 19°
   else if (t >= 10 && t < 20) {
-    text_layer_set_font(wld->temp_layer, large_font);
+    text_layer_set_font(wld->temp_layer, s_large_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentLeft);
   }
   // Temperature above 99° or below -9°
   else {
-    text_layer_set_font(wld->temp_layer, small_font);
+    text_layer_set_font(wld->temp_layer, s_small_font);
     text_layer_set_text_alignment(wld->temp_layer, GTextAlignmentCenter);
   }
   text_layer_set_text(wld->temp_layer, wld->temp_str);
@@ -115,14 +129,14 @@ void weather_layer_destroy(WeatherLayer* weather_layer) {
   text_layer_destroy(wld->temp_layer_background);
   bitmap_layer_destroy(wld->icon_layer);
 
-  // Destroy the previous bitmap if we have one
+  // Destroy the bitmap if we have one
   if (wld->icon != NULL) {
     gbitmap_destroy(wld->icon);
   }
   layer_destroy(weather_layer);
 
-  fonts_unload_custom_font(large_font);
-  fonts_unload_custom_font(small_font);
+  fonts_unload_custom_font(s_large_font);
+  fonts_unload_custom_font(s_small_font);
 }
 
 /*

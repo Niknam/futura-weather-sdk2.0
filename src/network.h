@@ -21,10 +21,15 @@ typedef struct {
   int sunset;
   int current_time;
   time_t updated;
-  WeatherError error;
 } WeatherData;
 
-void init_network(WeatherData *weather_data);
-void close_network();
+typedef void (*WeatherUpdateHandler)(WeatherData*);
+typedef void (*WeatherErrorHandler)(WeatherError);
 
-void request_weather();
+void init_network(void);
+void close_network(void);
+
+void request_weather(void);
+
+void set_weather_update_handler(WeatherUpdateHandler handler);
+void set_weather_error_handler(WeatherErrorHandler handler);

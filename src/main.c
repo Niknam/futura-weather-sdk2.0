@@ -2,147 +2,166 @@
 
 #include "weather_layer.h"
 #include "network.h"
-#include "config.h"
 
 #define TIME_FRAME      (GRect(0, 2, 144, 168-6))
 #define DATE_FRAME      (GRect(1, 66, 144, 168-62))
+#define LOADING_TIMEOUT 30000
 
-/* Keep a pointer to the current weather data as a global variable */
-static WeatherData *weather_data;
+/* Static variables to keep track of the UI elements */
+static Window *s_window;
+static TextLayer *s_date_layer;
+static TextLayer *s_time_layer;
+static WeatherLayer *s_weather_layer;
 
-/* Global variables to keep track of the UI elements */
-static Window *window;
-static TextLayer *date_layer;
-static TextLayer *time_layer;
-static WeatherLayer *weather_layer;
+static char s_date_text[] = "XXX 00";
+static char s_time_text[] = "00:00";
 
-static char date_text[] = "XXX 00";
-static char time_text[] = "00:00";
+static bool s_weather_loaded = false;
+
+static AppTimer *s_loading_timeout = NULL;
 
 /* Preload the fonts */
-GFont font_date;
-GFont font_time;
+static GFont s_font_date;
+static GFont s_font_time;
+
+static void step_loading_animation() {
+  static int s_animation_step = 0;
+  // 'Animate' loading icon until the first successful weather request
+  if (s_animation_step == 0) {
+    weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING1);
+  }
+  else if (s_animation_step == 1) {
+    weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING2);
+  }
+  else if (s_animation_step >= 2) {
+    weather_layer_set_icon(s_weather_layer, WEATHER_ICON_LOADING3);
+  }
+  s_animation_step = (s_animation_step + 1) % 3;
+}
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
   if (units_changed & MINUTE_UNIT) {
-    // Update the time - Fix to deal with 12 / 24 centering bug
-    time_t currentTime = time(0);
-    struct tm *currentLocalTime = localtime(&currentTime);
-
-    // Manually format the time as 12 / 24 hour, as specified
-    strftime(   time_text, 
-                sizeof(time_text), 
-                clock_is_24h_style() ? "%R" : "%I:%M", 
-                currentLocalTime);
-
-    // Drop the first char of time_text if needed
-    if (!clock_is_24h_style() && (time_text[0] == '0')) {
-      memmove(time_text, &time_text[1], sizeof(time_text) - 1);
+    clock_copy_time_string(s_time_text, sizeof(s_time_text));
+    // clock_copy_time_string may including a trailing space as it tries to fit in
+    // the AM/PM in 24-hour time; truncate it if so.
+    if (s_time_text[4] == ' ') {
+      s_time_text[4] = '\0';
     }
 
-    text_layer_set_text(time_layer, time_text);
+    text_layer_set_text(s_time_layer, s_time_text);
   }
   if (units_changed & DAY_UNIT) {
     // Update the date - Without a leading 0 on the day of the month
     char day_text[4];
     strftime(day_text, sizeof(day_text), "%a", tick_time);
-    snprintf(date_text, sizeof(date_text), "%s %i", day_text, tick_time->tm_mday);
-    text_layer_set_text(date_layer, date_text);
+    snprintf(s_date_text, sizeof(s_date_text), "%s %i", day_text, tick_time->tm_mday);
+    text_layer_set_text(s_date_layer, s_date_text);
   }
 
-  // Update the bottom half of the screen: icon and temperature
-  static int animation_step = 0;
-  if (weather_data->updated == 0 && weather_data->error == WEATHER_E_OK)
-  {
-    // 'Animate' loading icon until the first successful weather request
-    if (animation_step == 0) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_LOADING1);
-    }
-    else if (animation_step == 1) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_LOADING2);
-    }
-    else if (animation_step >= 2) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_LOADING3);
-    }
-    animation_step = (animation_step + 1) % 3;
-  }
-  else {
-    // Update the weather icon and temperature
-    if (weather_data->error) {
-      weather_layer_set_icon(weather_layer, WEATHER_ICON_PHONE_ERROR);
-    }
-    else {
-      // Show the temperature as 'stale' if it has not been updated in 30 minutes
-      bool stale = false;
-      if (weather_data->updated > time(NULL) + 1800) {
-        stale = true;
-      }
-      weather_layer_set_temperature(weather_layer, weather_data->temperature, stale);
-
-      // Day/night check
-      bool night_time = false;
-      if (weather_data->current_time < weather_data->sunrise || weather_data->current_time > weather_data->sunset)
-        night_time = true;
-      weather_layer_set_icon(weather_layer, weather_icon_for_condition(weather_data->condition, night_time));
-    }
+  // Run the animation if we haven't loaded the weather yet.
+  if (!s_weather_loaded) {
+    step_loading_animation();
   }
 
   // Refresh the weather info every 15 minutes
-  if (units_changed & MINUTE_UNIT && (tick_time->tm_min % 15) == 0)
-  {
+  if ((units_changed & MINUTE_UNIT) && (tick_time->tm_min % 15 == 0)) {
     request_weather();
   }
 }
 
+static void mark_weather_loaded(void) {
+  if (!s_weather_loaded) {
+    s_weather_loaded = true;
+    // We don't need to run this every second any more.
+    tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+  }
+  if (s_loading_timeout != NULL) {
+    app_timer_cancel(s_loading_timeout);
+    s_loading_timeout = NULL;
+  }
+}
+
+static void handle_weather_update(WeatherData* weather) {
+  weather_layer_set_temperature(s_weather_layer, weather->temperature);
+
+  const bool is_night = (weather->current_time < weather->sunrise || weather->current_time > weather->sunset);
+  weather_layer_set_icon(s_weather_layer, weather_icon_for_condition(weather->condition, is_night));
+
+  mark_weather_loaded();
+}
+
+static void handle_weather_error(WeatherError error) {
+  // We apparently don't actually care what the error was at all.
+  weather_layer_set_icon(s_weather_layer, WEATHER_ICON_PHONE_ERROR);
+
+  mark_weather_loaded();
+}
+
+static void handle_loading_timeout(void* unused) {
+  s_loading_timeout = NULL;
+  if (!s_weather_loaded) {
+    handle_weather_error(WEATHER_E_PHONE);
+  }
+}
+
 static void init(void) {
-  window = window_create();
-  window_stack_push(window, true /* Animated */);
-  window_set_background_color(window, GColorBlack);
+  s_window = window_create();
+  window_stack_push(s_window, true /* Animated */);
+  window_set_background_color(s_window, GColorBlack);
 
-  weather_data = malloc(sizeof(WeatherData));
-  init_network(weather_data);
+  init_network();
+  set_weather_update_handler(handle_weather_update);
+  set_weather_error_handler(handle_weather_error);
 
-  font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
-  font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
+  s_font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
+  s_font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
 
-  time_layer = text_layer_create(TIME_FRAME);
-  text_layer_set_text_color(time_layer, GColorWhite);
-  text_layer_set_background_color(time_layer, GColorClear);
-  text_layer_set_font(time_layer, font_time);
-  text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(time_layer));
+  s_time_layer = text_layer_create(TIME_FRAME);
+  text_layer_set_text_color(s_time_layer, GColorWhite);
+  text_layer_set_background_color(s_time_layer, GColorClear);
+  text_layer_set_font(s_time_layer, s_font_time);
+  text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(s_window), text_layer_get_layer(s_time_layer));
 
-  date_layer = text_layer_create(DATE_FRAME);
-  text_layer_set_text_color(date_layer, GColorWhite);
-  text_layer_set_background_color(date_layer, GColorClear);
-  text_layer_set_font(date_layer, font_date);
-  text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(date_layer));
+  s_date_layer = text_layer_create(DATE_FRAME);
+  text_layer_set_text_color(s_date_layer, GColorWhite);
+  text_layer_set_background_color(s_date_layer, GColorClear);
+  text_layer_set_font(s_date_layer, s_font_date);
+  text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(s_window), text_layer_get_layer(s_date_layer));
 
   // Add weather layer
-  weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
-  layer_add_child(window_get_root_layer(window), weather_layer);
+  s_weather_layer = weather_layer_create(GRect(0, 90, 144, 80));
+  layer_add_child(window_get_root_layer(s_window), s_weather_layer);
 
   // Update the screen right away
   time_t now = time(NULL);
   handle_tick(localtime(&now), SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT );
   // And then every second
   tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+
+  // We don't trigger the weather from here, because it is possible for the other end
+  // to not yet be running when we finish startup. However, we do set a timeout so we
+  // don't sit around animating forever. However, if Bluetooth is not connected, then
+  // this cannot possibly succeed and we fail instantly.
+  if(bluetooth_connection_service_peek()) {
+    s_loading_timeout = app_timer_register(LOADING_TIMEOUT, handle_loading_timeout, NULL);
+  } else {
+    handle_weather_error(WEATHER_E_DISCONNECTED);
+  }
 }
 
 static void deinit(void) {
-  window_destroy(window);
+  window_destroy(s_window);
   tick_timer_service_unsubscribe();
 
-  text_layer_destroy(time_layer);
-  text_layer_destroy(date_layer);
-  weather_layer_destroy(weather_layer);
+  text_layer_destroy(s_time_layer);
+  text_layer_destroy(s_date_layer);
+  weather_layer_destroy(s_weather_layer);
 
-  fonts_unload_custom_font(font_date);
-  fonts_unload_custom_font(font_time);
-
-  free(weather_data);
+  fonts_unload_custom_font(s_font_date);
+  fonts_unload_custom_font(s_font_time);
 }
 
 int main(void) {

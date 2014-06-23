@@ -3,17 +3,17 @@
   "shortName": "Futura Weather",
   "longName": "Futura Weather",
   "companyName": "Pebble Community",
-  "versionCode": 8,
-  "versionLabel": "2.0.3",
+  "versionCode": 9,
+  "versionLabel": "2.1.0",
   "watchapp": {
     "watchface": true
   },
   "appKeys": {
     "temperature": 0,
     "condition": 1,
-	"sunrise": 2,
-	"sunset": 3,
-	"current_time": 4,
+    "sunrise": 2,
+    "sunset": 3,
+    "current_time": 4,
     "error": 5,
     "request_update": 42
   },
