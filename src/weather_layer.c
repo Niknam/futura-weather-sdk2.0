@@ -151,7 +151,7 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 		time_index++;
     }
 	
-	char* stale_text = (is_stale)? "old" : "";
+	char* stale_text = (is_stale)? ":(" : "";
 
 	char* s_trend_charging = (is_charging) ? "+" : " ";
 	

@@ -20,7 +20,7 @@ typedef struct {
   int sunrise;
   int sunset;
   int current_time;
-  char place[9];
+  char place[12];
   BatteryChargeState battery;
   //int night_time;
   int b_still_mode;
