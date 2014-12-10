@@ -15,6 +15,7 @@ typedef struct {
   int temperature;
   int intemp;
   int outtemp;
+  int rrate;
   int condition;
   int conditions[NUM_WEATHER_CONDITIONS];
   int sunrise;

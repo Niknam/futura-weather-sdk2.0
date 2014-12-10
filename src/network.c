@@ -13,9 +13,9 @@ include "cumuluswebtags.php";
 $lat = $_REQUEST['lat'];
 $lon = $_REQUEST['lon'];
 
-// limit to 2 decimal places as this gives better results from google
-$lat = round($lat, 2);
-$lon = round($lon, 2);
+// limit to 2 decimal places as this gives better results from google, 6 dec places is the resolution of yahoo api's using an app id
+$lat = round($lat, 6);
+$lon = round($lon, 6);
 
 $jsonurl = "http://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&cnt=1";
 $json = file_get_contents($jsonurl);
@@ -26,7 +26,13 @@ $json = file_get_contents($jsonurl);
 $vars_map = json_decode($json, true);
 $place = $vars_map['results'][0]['address_components'][2]['short_name'];
 
-$yql_query = "select * from weather.forecast where woeid = 39699 and u = 'c' | truncate(count=5)";
+$yql_query = 'select * from geo.placefinder where text="'.$lat.','.$lon.'" and gflags="R"';
+$yql_query_url = 'http://query.yahooapis.com/v1/public/yql' . "?q=" . urlencode($yql_query) . "&format=json";
+$json = file_get_contents($yql_query_url);
+$vars_map = json_decode($json, true);
+$woeid = $vars_map['query']['results']['Result']['woeid'];
+
+$yql_query = "select * from weather.forecast where woeid = $woeid and u = 'c' | truncate(count=5)";
 $yql_query_url = 'http://query.yahooapis.com/v1/public/yql' . "?q=" . urlencode($yql_query) . "&format=json";
 $json = file_get_contents($yql_query_url);
 $vars_map = json_decode($json, true);
@@ -44,6 +50,7 @@ $gary = array(
 	'intemp' => $RCintemp, 
 	'temp' => $RCtemp, 
 	'ytemp' => (int)$ytemp, 
+	'rrate' => $RCrrate,
 	'place' => $place, 
 	'ccnow' => (int)$ccnow, 
 	'cc0' => (int)$cc0,
@@ -83,6 +90,7 @@ static void appmsg_in_received(DictionaryIterator *received, void *context)
   Tuple *cc2_tuple = dict_find(received, KEY_CC2);
   Tuple *cc3_tuple = dict_find(received, KEY_CC3);
   Tuple *cc4_tuple = dict_find(received, KEY_CC4);
+  Tuple *rrate_tuple = dict_find(received, KEY_RRATE);
 
   Tuple *error_tuple = dict_find(received, KEY_ERROR);
 
@@ -99,6 +107,7 @@ static void appmsg_in_received(DictionaryIterator *received, void *context)
     weather->conditions[2] = cc2_tuple->value->int32;
     weather->conditions[3] = cc3_tuple->value->int32;
     weather->conditions[4] = cc4_tuple->value->int32;
+    weather->rrate = rrate_tuple->value->int32;
 	strncpy(&weather->place[0], place_tuple->value->cstring, sizeof(weather->place)/sizeof(weather->place[0])-1);
     weather->error = WEATHER_E_OK;
     weather->updated = time(NULL);

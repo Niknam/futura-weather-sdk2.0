@@ -126,12 +126,20 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 	}
 	const char* s_trend_outtemp = (w->outtemp > wld->trend_weather_data.outtemp) ? "+" : ".";
 		
+	if(wld->last_weather_data.rrate != w->rrate)
+	{
+		changed = 1;
+		wld->trend_weather_data.rrate = wld->last_weather_data.rrate;
+	}
+	const char* s_trend_rrate = (w->rrate > wld->trend_weather_data.rrate) ? "+" : ".";
+
 	wld->last_weather_data = *w;
   
 	// values are multiplied by 10 in order to give more trending data, add 5 to round up
 	int16_t t = (w->temperature+5)/10;
 	int16_t in = (w->intemp+5)/10;
 	int16_t out = (w->outtemp+5)/10;
+	int16_t rrate = w->rrate; // rainfall * 10 so the min is 3 for our measurement
   
 	uint8_t percent = w->battery.charge_percent;
 	bool is_charging = w->battery.is_charging;
@@ -155,9 +163,9 @@ void weather_layer_set_temperature(WeatherLayer* weather_layer, WeatherData* w, 
 
 	char* s_trend_charging = (is_charging) ? "+" : " ";
 	
-	snprintf(wld->output_str, sizeof(wld->output_str), "%i%s%i%s%i%s\n%i%s\n%s %s", 
+	snprintf(wld->output_str, sizeof(wld->output_str), "%i%s%i%s%i%s\n%i%s%i\n%s %s", 
 		in, s_trend_intemp, out, s_trend_outtemp, t, s_trend_temperature,
-		percent, s_trend_charging, //&time_text[time_index], 
+		percent, s_trend_charging, rrate,//&time_text[time_index], 
 		w->place, stale_text);
 
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "weather layer place %s", &place[0]);

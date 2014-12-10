@@ -47,6 +47,7 @@ function fetchWeather(latitude, longitude) {
     var response;
     var intemp  = 0;
     var outtemp = 0;
+    var rrate = 0;
 
     var req = new XMLHttpRequest();
     req.open('GET', "http://gary.ath.cx/gary.php?" +
@@ -75,6 +76,7 @@ function fetchWeather(latitude, longitude) {
                     sunset = response.sys.sunset;
                     intemp = Math.round(response.gary.intemp*10);
                     outtemp = Math.round(response.gary.temp*10);
+                    rrate = Math.round(response.gary.rrate*10);
 
                     var place = response.gary.place;
 					
@@ -82,6 +84,7 @@ function fetchWeather(latitude, longitude) {
 		    
                     console.log("js place:" + place + " in:" + intemp + " Temperature: " + temperature + 
 							" Condition: " + condition + " Sunrise: " + sunrise + " Sunset: " + sunset + 
+							" Rrate: " + rrate +
 							" ccnow: " + ccnow,
 							" cc0: " + response.gary.cc0,
 							" cc1: " + response.gary.cc1,
@@ -101,6 +104,7 @@ function fetchWeather(latitude, longitude) {
                         "temperature": temperature,
 						"intemp": intemp,
 						"outtemp": outtemp,
+						"rrate": rrate,
                         "sunrise": sunrise,
                         "sunset": sunset,
                         "current_time": current_time,

@@ -19,6 +19,7 @@
 #define KEY_CC2 12
 #define KEY_CC3 13
 #define KEY_CC4 14
+#define KEY_RRATE 15
 #define KEY_REQUEST_UPDATE 42
 
 void init_network(WeatherData *weather_data);
