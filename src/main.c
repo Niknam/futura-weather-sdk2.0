@@ -127,9 +127,12 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 	{
 		if(max_a.z < still_mode_jitter_threshold && min_a.z > -still_mode_jitter_threshold)
 		{
-			weather_data->b_still_mode = 1;
-			time_still_mode = time(0);
-		    APP_LOG(APP_LOG_LEVEL_DEBUG, "in still mode");
+			if(!weather_data->battery.is_charging)
+			{
+				weather_data->b_still_mode = 1;
+				time_still_mode = time(0);
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "in still mode");
+			}
 		}
 		else
 		{
