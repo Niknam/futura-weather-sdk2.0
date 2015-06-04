@@ -4,7 +4,7 @@
   "longName": "Gary Weather",
   "companyName": "Pebble Community",
   "versionCode": 8,
-  "versionLabel": "3.0.2",
+  "versionLabel": "3.1",
   "watchapp": {
     "watchface": true
   },
