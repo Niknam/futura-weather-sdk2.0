@@ -63,12 +63,15 @@ function fetchWeather(latitude, longitude) {
 				{
 					// note we multiply temps by 10 before returning them, this allows for more accurate trending information
                     var tempResult = response.main.temp;
+          
+                    /* Stop doing this as all other temps are in Celcius. Units should depend on config.h or should at least all be the same.
                     if (response.sys.country === "US") {
-                        // Convert temperature to Fahrenheit if user is within the US
+                        // Convert temperature to Fahrenheit if user is within the US. 
                         temperature = Math.round((((tempResult - 273.15) * 1.8) + 32) * 10);
                     }
-                    else {
-                        // Otherwise, convert temperature to Celsius
+                    else */ 
+                    {
+                        // convert temperature to Celsius
                         temperature = Math.round((tempResult - 273.15)*10);
                     }		 
                     condition = response.weather[0].id;

@@ -19,7 +19,7 @@
         "temperature": 0
     },
     "capabilities": [
-        ""
+        "configurable"
     ],
     "companyName": "Pebble Community",
     "longName": "Gary Weather",

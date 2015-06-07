@@ -407,8 +407,16 @@ static void init(void)
 {
   window = window_create();
   window_stack_push(window, true /* Animated */);
-  window_set_background_color(window, GColorBlack);
+  //window_set_background_color(window, GColorBlack);
 
+#ifdef PBL_COLOR
+  window_set_background_color(window, GColorDukeBlue);
+#else
+  window_set_background_color(window, GColorBlack);
+#endif
+
+
+  
   weather_data = malloc(sizeof(WeatherData));
   memset(weather_data, 0, sizeof(WeatherData));
   init_network(weather_data);
@@ -417,7 +425,7 @@ static void init(void)
   
   font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_18));
   font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FUTURA_CONDENSED_53));
-
+  
   time_layer = text_layer_create(TIME_FRAME);
   text_layer_set_text_color(time_layer, GColorWhite);
   text_layer_set_background_color(time_layer, GColorClear);
