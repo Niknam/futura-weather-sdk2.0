@@ -407,15 +407,14 @@ static void init(void)
 {
   window = window_create();
   window_stack_push(window, true /* Animated */);
-  //window_set_background_color(window, GColorBlack);
 
 #ifdef PBL_COLOR
-  window_set_background_color(window, GColorDukeBlue);
+  GColor background_color = GColorRajah;
 #else
-  window_set_background_color(window, GColorBlack);
+  GColor background_color = GColorBlack;
 #endif
-
-
+  
+  window_set_background_color(window, background_color);
   
   weather_data = malloc(sizeof(WeatherData));
   memset(weather_data, 0, sizeof(WeatherData));
