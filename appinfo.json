@@ -1,171 +1,189 @@
 {
-  "uuid": "6ebe49d7-bc89-498e-b147-049f49c099ad",
-  "shortName": "Futura Weather",
-  "longName": "Futura Weather",
-  "companyName": "Pebble Community",
-  "versionCode": 8,
-  "versionLabel": "2.0.3",
-  "watchapp": {
-    "watchface": true
-  },
-  "appKeys": {
-    "temperature": 0,
-    "condition": 1,
-	"sunrise": 2,
-	"sunset": 3,
-	"current_time": 4,
-    "error": 5,
-    "request_update": 42
-  },
-  "resources": {
-    "media": [
-      {
-        "type": "png",
-        "name": "ICON_DRIZZLE",
-        "file": "images/drizzle.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_LOADING3",
-        "file": "images/loading3.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_LOADING2",
-        "file": "images/loading2.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_LOADING1",
-        "file": "images/loading1.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_NOT_AVAILABLE",
-        "file": "images/not-available.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_HOT",
-        "file": "images/hot.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_COLD",
-        "file": "images/cold.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_RAIN_SLEET",
-        "file": "images/rain-sleet.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_RAIN_SNOW",
-        "file": "images/rain-snow.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_THUNDER",
-        "file": "images/thunder.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_SNOW_SLEET",
-        "file": "images/snow-sleet.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_PHONE_ERROR",
-        "file": "images/phone_error.png"
-      },
-      {
-        "menuIcon": true,
-        "type": "png",
-        "name": "IMAGE_MENU_ICON",
-        "file": "images/menu_icon_futura.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_CLOUD_ERROR",
-        "file": "images/cloud-error.png"
-      },
-      {
-        "type": "font",
-        "name": "FUTURA_CONDENSED_53",
-        "file": "fonts/futura_condensed_bold-webfont.ttf"
-      },
-      {
-        "type": "png",
-        "name": "ICON_CLEAR_DAY",
-        "file": "images/clear-day.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_CLEAR_NIGHT",
-        "file": "images/clear-night.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_RAIN",
-        "file": "images/rain.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_SNOW",
-        "file": "images/snow.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_SLEET",
-        "file": "images/sleet.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_FOG",
-        "file": "images/fog.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_CLOUDY",
-        "file": "images/cloudy.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_PARTLY_CLOUDY_DAY",
-        "file": "images/partly-cloudy-day.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_PARTLY_CLOUDY_NIGHT",
-        "file": "images/partly-cloudy-night.png"
-      },
-      {
-        "type": "png",
-        "name": "ICON_WIND",
-        "file": "images/wind.png"
-      },
-      {
-        "name": "FUTURA_18",
-        "trackingAdjust": 3,
-        "characterRegex": "[A-Za-z0-9 ]",
-        "file": "fonts/futura.ttf",
-        "type": "font"
-      },
-      {
-        "name": "FUTURA_40",
-        "trackingAdjust": -4,
-        "characterRegex": "[0-9\u00b0 -]",
-        "file": "fonts/futura.ttf",
-        "type": "font"
-      },
-      {
-        "name": "FUTURA_35",
-        "trackingAdjust": -4,
-        "characterRegex": "[0-9\u00b0 -]",
-        "file": "fonts/futura.ttf",
-        "type": "font"
-      }
-    ]
-  }
+    "appKeys": {
+        "cc0": 10,
+        "cc1": 11,
+        "cc2": 12,
+        "cc3": 13,
+        "cc4": 14,
+        "ccnow": 9,
+        "condition": 1,
+        "current_time": 4,
+        "error": 5,
+        "intemp": 6,
+        "outtemp": 7,
+        "place": 8,
+        "request_update": 42,
+        "rrate": 15,
+        "sunrise": 2,
+        "sunset": 3,
+        "temperature": 0
+    },
+    "capabilities": [
+        "configurable"
+    ],
+    "companyName": "Pebble Community",
+    "longName": "Gary Weather",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "characterRegex": "[0-9\u00b0 -]",
+                "file": "fonts/futura.ttf",
+                "name": "FUTURA_35",
+                "trackingAdjust": -4,
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9\u00b0 -]",
+                "file": "fonts/futura.ttf",
+                "name": "FUTURA_40",
+                "trackingAdjust": -4,
+                "type": "font"
+            },
+            {
+                "characterRegex": "[A-Za-z0-9:\u00b0 -.\u2191]",
+                "file": "fonts/futura.ttf",
+                "name": "FUTURA_18",
+                "trackingAdjust": 3,
+                "type": "font"
+            },
+            {
+                "file": "images/wind.png",
+                "name": "ICON_WIND",
+                "type": "png"
+            },
+            {
+                "file": "images/partly-cloudy-night.png",
+                "name": "ICON_PARTLY_CLOUDY_NIGHT",
+                "type": "png"
+            },
+            {
+                "file": "images/partly-cloudy-day.png",
+                "name": "ICON_PARTLY_CLOUDY_DAY",
+                "type": "png"
+            },
+            {
+                "file": "images/cloudy.png",
+                "name": "ICON_CLOUDY",
+                "type": "png"
+            },
+            {
+                "file": "images/fog.png",
+                "name": "ICON_FOG",
+                "type": "png"
+            },
+            {
+                "file": "images/sleet.png",
+                "name": "ICON_SLEET",
+                "type": "png"
+            },
+            {
+                "file": "images/snow.png",
+                "name": "ICON_SNOW",
+                "type": "png"
+            },
+            {
+                "file": "images/rain.png",
+                "name": "ICON_RAIN",
+                "type": "png"
+            },
+            {
+                "file": "images/clear-night.png",
+                "name": "ICON_CLEAR_NIGHT",
+                "type": "png"
+            },
+            {
+                "file": "images/clear-day.png",
+                "name": "ICON_CLEAR_DAY",
+                "type": "png"
+            },
+            {
+                "file": "fonts/futura_condensed_bold-webfont.ttf",
+                "name": "FUTURA_CONDENSED_53",
+                "type": "font"
+            },
+            {
+                "file": "images/cloud-error.png",
+                "name": "ICON_CLOUD_ERROR",
+                "type": "png"
+            },
+            {
+                "file": "images/menu_icon_futura.png",
+                "menuIcon": true,
+                "name": "IMAGE_MENU_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/phone_error.png",
+                "name": "ICON_PHONE_ERROR",
+                "type": "png"
+            },
+            {
+                "file": "images/snow-sleet.png",
+                "name": "ICON_SNOW_SLEET",
+                "type": "png"
+            },
+            {
+                "file": "images/thunder.png",
+                "name": "ICON_THUNDER",
+                "type": "png"
+            },
+            {
+                "file": "images/rain-snow.png",
+                "name": "ICON_RAIN_SNOW",
+                "type": "png"
+            },
+            {
+                "file": "images/rain-sleet.png",
+                "name": "ICON_RAIN_SLEET",
+                "type": "png"
+            },
+            {
+                "file": "images/cold.png",
+                "name": "ICON_COLD",
+                "type": "png"
+            },
+            {
+                "file": "images/hot.png",
+                "name": "ICON_HOT",
+                "type": "png"
+            },
+            {
+                "file": "images/not-available.png",
+                "name": "ICON_NOT_AVAILABLE",
+                "type": "png"
+            },
+            {
+                "file": "images/loading1.png",
+                "name": "ICON_LOADING1",
+                "type": "png"
+            },
+            {
+                "file": "images/loading2.png",
+                "name": "ICON_LOADING2",
+                "type": "png"
+            },
+            {
+                "file": "images/loading3.png",
+                "name": "ICON_LOADING3",
+                "type": "png"
+            },
+            {
+                "file": "images/drizzle.png",
+                "name": "ICON_DRIZZLE",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "Gary Weather",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
+    "uuid": "511e6415-6ae0-4455-8f85-f5f5ca813b03",
+    "versionLabel": "3.1",
+    "watchapp": {
+        "watchface": true
+    }
 }
