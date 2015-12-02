@@ -37,7 +37,7 @@ function fetchWeather(latitude, longitude) {
     var response;
     var req = new XMLHttpRequest();
     req.open('GET', "http://api.openweathermap.org/data/2.5/weather?" +
-        "lat=" + latitude + "&lon=" + longitude + "&cnt=1", true);
+        "lat=" + latitude + "&lon=" + longitude + "&appid=528f9a3324843e74bd0f849d897c9577", true);
     req.onload = function(e) {
         if (req.readyState == 4) {
             if(req.status == 200) {
